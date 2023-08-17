@@ -1,0 +1,5 @@
+timeout 300 'hyprctl dispatch dpms off' resume 'hyprctl dispatch dpms on'
+timeout 310 'swaylock -f -e -l -L -s center -i /home/nithin/.config/swaylock/lockimage.png'
+timeout 600 'systemctl suspend' 
+before-sleep 'swaylock -f -e -l -L -s center -i /home/nithin/.config/swaylock/lockimage.png'
+
