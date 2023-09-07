@@ -1,0 +1,18 @@
+ 
+
+clear shift
+clear control
+
+keycode 66 = Shift_L NoSymbol Shift_L
+keysym 0x7a = x
+keycode 50 = z NoSymbol z
+keycode 52= x NoSymbol x
+keycode 53= c NoSymbol c
+keycode 54= v NoSymbol v
+keycode 55= b NoSymbol b
+keycode 56= Super_L NoSymbol Super_L
+keycode 135= Caps_Lock NoSymbol Caps_Lock
+
+add control = Control_L
+add control = Control_R
+add shift = Shift_R
