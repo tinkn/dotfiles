@@ -22,9 +22,9 @@ import XMonad.Layout.Spacing
 import XMonad.Layout.ThreeColumns
 
 import qualified Codec.Binary.UTF8.String as UTF8
--- import qualified DBus as D
--- import qualified DBus.Client as D
-
+import XMonad.ManageHook -- scratchpad
+import XMonad.Util.NamedScratchpad -- scratchpad
+import qualified XMonad.StackSet as W -- does something important i'm sure.
 main :: IO ()
 main = do
         xmproc <- spawnPipe "~/.config/.fehbg"
@@ -43,13 +43,15 @@ myConfig =
                 , workspaces = myWorkspaces
                 , borderWidth = 0
                 }
-                `additionalKeysP` [ ("M-S-s", unGrab *> spawn "scrot -s -e 'xclip -selection clipboard -t image/png -i $f && rm $f'") -- Take a screenshot of an area
-                                  , ("M-C-s", unGrab *> spawn "scrot -e 'xclip -selection clipboard -t image/png -i $f && rm $f'")
+                `additionalKeysP` [ ("M-s", spawn "flameshot gui") -- Take a screenshot of an area
+		                  , ("M-S-s", spawn "flameshot full") -- Take a screenshot of all screens
                                   , ("M-x", kill) -- Close windows
                                   , ("M-t", spawn "kitty") 
                                   -- , ("M-r", spawn "rofi -show drun -show-icons") 
                                   , ("M-r", spawn ".config/rofi/launchers/type-7/launcher.sh") -- Run launcher
                                   , ("M-p", spawn ".config/rofi/powermenu/type-5/powermenu.sh") -- Run power menu
+                                  , ("M-n", namedScratchpadAction myScratchPads "pavucontrol") -- scratchpad 
+                                  , ("M-m", namedScratchpadAction myScratchPads "terminal") -- scratchpad 
                                   ]
 
 myManageHook :: ManageHook
@@ -68,10 +70,19 @@ myManageHook =
                 , className =? "nheko" --> doShift "3:msg"
                 , className =? "Firefox" --> doShift "4:web"
                 , className =? "Chromium" --> doShift "4:web"
-                , className =? "Alacritty" --> doShift "5:term"
+                -- , className =? "Alacritty" --> doFloat
                 , className =? "Thunar" --> doShift "6:file"
                 , className =? "Opera" --> doShift "7:web"
                 ]
+		<+> namedScratchpadManageHook myScratchPads
+
+myScratchPads = [
+-- run htop in term, top half, perfect fit.
+    NS "pavucontrol" "pavucontrol" (className =? "Pavucontrol") 
+        (customFloating $ W.RationalRect (1 / 6) (1 / 8) (2 / 3) (1/2)), 
+    NS "terminal" "alacritty --class scratchpad" (className =? "scratchpad") 
+        (customFloating $ W.RationalRect (1 / 6) (1 / 8) (2 / 3) (3/4)) 
+    ] where role = stringProperty "WM_WINDOW_ROLE"
 
 startup = do
         spawnOnce  "picom"

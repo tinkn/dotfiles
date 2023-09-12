@@ -594,6 +594,7 @@
   "s" 'swiper
   "m" 'magit
   "t" 'treemacs
+  "d" 'dired
   "l f" 'lsp-format-buffer)
 
 
