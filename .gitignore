@@ -1,4 +1,4 @@
-	xmonad/stack.yaml
-	xmonad/stack.yaml.lock
-	xmonad/xmonad-contrib/
-	xmonad/xmonad/
+xmonad/stack.yaml
+xmonad/stack.yaml.lock
+xmonad/xmonad-contrib/
+xmonad/xmonad/
