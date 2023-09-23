@@ -1,0 +1,22 @@
+(defcfg
+  input  (device-file "/dev/input/by-id/usb-Razer_Razer_BlackWidow_Ultimate_2016-event-kbd")
+  output (uinput-sink "KMonad kbd")
+  fallthrough true)
+  ;; Key remappings
+
+(defsrc
+  `  1    2    3    4    5    6    7    8    9    0    -    =    bspc
+  tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
+  caps a    s    d    f    g    h    j    k    l    ;    '    ret
+  lsft z    x    c    v    b    n    m    ,    .    /    rsft
+  lctl lmet lalt           spc            ralt rmet cmp  rctl
+)
+
+
+(deflayer base
+  `  1    2    3    4    5    6    7    8    9    0    -    =    bspc
+  tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
+  lsft a    s    d    f    g    h    j    k    l    ;    '    ret
+  z    x    c    v    b    lmet n    m    ,    .    /    rsft
+  lctl lmet lalt           spc            ralt rmet cmp rctl
+)

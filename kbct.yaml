@@ -1,0 +1,11 @@
+- keyboards: ["Razer Razer BlackWidow Ultimate 2016"]
+  keymap:
+    scrolllock: capslock
+    capslock: leftshift
+    leftshift: z
+    z: x
+    x: c
+    c: v
+    v: b
+    b: leftmeta
+
