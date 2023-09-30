@@ -591,6 +591,9 @@
   "p p" 'projectile-switch-project
   "p c" 'counsel-projectile
   "p r" 'projectile-ripgrep
+  "p i" 'projectile-ibuffer
+  "p k" 'projectile-kill-buffers
+  "p b" 'projectile-switch-to-buffer
   "s" 'swiper
   "m" 'magit
   "t" 'treemacs
