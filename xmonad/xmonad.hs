@@ -45,8 +45,8 @@ myConfig =
                 , workspaces = myWorkspaces
                 , borderWidth = 0
                 }
-                `additionalKeysP` [ ("M-s", spawn "flameshot gui") -- Take a screenshot of an area
-		                  , ("M-S-s", spawn "flameshot full") -- Take a screenshot of all screens
+                `additionalKeysP` [ ("M-a", spawn "flameshot gui") -- Take a screenshot of an area
+		                  , ("M-S-a", spawn "flameshot full") -- Take a screenshot of all screens
                                   , ("M-x", kill) -- Close windows
                                   , ("M-t", spawn "kitty") 
                                   -- , ("M-r", spawn "rofi -show drun -show-icons") 
