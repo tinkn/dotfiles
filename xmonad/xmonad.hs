@@ -15,7 +15,6 @@ import XMonad.Actions.SpawnOn
 import XMonad.Util.EZConfig
 import XMonad.Util.Loggers
 import XMonad.Util.SpawnOnce
-import XMonad.Util.Ungrab
 
 import XMonad.Layout.Magnifier
 import XMonad.Layout.Spacing
@@ -25,11 +24,14 @@ import qualified Codec.Binary.UTF8.String as UTF8
 import XMonad.ManageHook -- scratchpad
 import XMonad.Util.NamedScratchpad -- scratchpad
 import qualified XMonad.StackSet as W -- does something important i'm sure.
+
+import XMonad.Actions.CycleWS (nextScreen, shiftNextScreen, prevScreen, shiftPrevScreen)
+
 main :: IO ()
 main = do
         xmproc <- spawnPipe "~/.config/.fehbg"
         xmproc <- spawnPipe "~/.config/.screenlayout.sh"
-        xmproc <- spawnPipe "xmodmap ~/.config/.Xmodmap"
+        -- xmproc <- spawnPipe "xmodmap ~/.config/.Xmodmap"
 	xmproc <- spawnPipe "pipewire"
         xmonad $ ewmhFullscreen $ ewmh $ withEasySB (statusBarProp "xmobar" (pure myXmobarPP)) defToggleStrutsKey $ docks $ myConfig
 
@@ -50,8 +52,24 @@ myConfig =
                                   -- , ("M-r", spawn "rofi -show drun -show-icons") 
                                   , ("M-r", spawn ".config/rofi/launchers/type-7/launcher.sh") -- Run launcher
                                   , ("M-p", spawn ".config/rofi/powermenu/type-5/powermenu.sh") -- Run power menu
-                                  , ("M-n", namedScratchpadAction myScratchPads "pavucontrol") -- scratchpad 
-                                  , ("M-m", namedScratchpadAction myScratchPads "terminal") -- scratchpad 
+                                  , ("M-a", namedScratchpadAction myScratchPads "pavucontrol") -- scratchpad 
+                                  , ("M-s", namedScratchpadAction myScratchPads "terminal") -- scratchpad 
+				
+				  -- Modified Keybindings
+                                  , ("M-n", windows W.focusDown)
+                                  , ("M-e", windows W.focusUp)
+                                  , ("M-h", windows W.focusMaster)
+                                  , ("M-S-n", windows W.swapDown)
+                                  , ("M-S-e", windows W.swapUp)
+                                  , ("M-i", sendMessage Shrink)
+                                  , ("M-m", sendMessage Expand)
+                                  , ("M-f", nextScreen)
+                                  , ("M-S-f", shiftNextScreen)
+                                  , ("M-w", prevScreen)
+                                  , ("M-S-w", shiftPrevScreen)
+                                  , ("<F9>", spawn "pamixer -i 5")
+                                  , ("<F10>", spawn "pamixer -d 5")
+                                  , ("<F11>", spawn "pamixer -t")
                                   ]
 
 myManageHook :: ManageHook
