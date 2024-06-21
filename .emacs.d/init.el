@@ -333,11 +333,12 @@
 
 ;;(use-package visual-fill-column
 ;;  :hook (org-mode . efs/org-mode-visual-fill))
+(setopt python-shell-interpreter "/home/nithin/my-python/bin/python"
+	 python-shell-interpreter-args "-i" )
 
 (org-babel-do-load-languages
   'org-babel-load-languages
-  '((emacs-lisp . t)
-    (python . t)))
+    '((python . t)))
 
 (push '("conf-unix" . conf-unix) org-src-lang-modes)
 
@@ -358,67 +359,27 @@
 
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'efs/org-babel-tangle-config)))
 
-(defun efs/lsp-mode-setup ()
-  (setq lsp-headerline-breadcrumb-segments '(project file symbols))
-  (lsp-headerline-breadcrumb-mode))
 
-(use-package lsp-mode
-  :commands (lsp lsp-deferred)
-  :hook (lsp-mode . efs/lsp-mode-setup)
-  :init
-  (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
-  :config
-  (lsp-enable-which-key-integration t))
+(use-package eglot
+  :hook ((rust-mode nix-mode) . eglot-ensure)
+  :config (add-to-list 'eglot-server-programs
+                       `(rust-mode . ("rust-analyzer" :initializationOptions
+                                     ( :procMacro (:enable t)
+                                       :cargo ( :buildScripts (:enable t)
+                                                :features "all"))))))
 
-(use-package lsp-ui
-  :hook (lsp-mode . lsp-ui-mode)
-  :custom
-  (lsp-ui-doc-position 'bottom))
+;;(use-package flycheck :ensure)
 
-(use-package lsp-treemacs
-  :after lsp
-  :bind  ("C-c t" . treemacs-select-window))
 
 (use-package treemacs-evil)
 (use-package treemacs-projectile)
 
-(use-package lsp-ivy)
 
-
-(use-package typescript-mode
-  :mode "\\.ts\\'"
-  :hook (typescript-mode . lsp-deferred)
-  :config
-  (setq typescript-indent-level 2))
-
-(use-package python-mode
-  :ensure t
-  :hook (python-mode . lsp-deferred)
-  :custom
-  ;; NOTE: Set these if Python 3 is called "python3" on your system!
-  ;; (python-shell-interpreter "python3")
-  ;; (dap-python-executable "python3")
-  (dap-python-debugger 'debugpy)
-  :config
-  (require 'dap-python))
 
 (use-package pyvenv
   :config
   (pyvenv-mode 1))
 
-(use-package company
-  :after lsp-mode
-  :hook (lsp-mode . company-mode)
-  :bind (:map company-active-map
-         ("<tab>" . company-complete-selection))
-        (:map lsp-mode-map
-         ("<tab>" . company-indent-or-complete-common))
-  :custom
-  (company-minimum-prefix-length 1)
-  (company-idle-delay 0.0))
-
-(use-package company-box
-  :hook (company-mode . company-box-mode))
 
 (use-package projectile
   :diminish projectile-mode
@@ -440,15 +401,13 @@
 (use-package counsel-projectile
   :config (counsel-projectile-mode))
 
-(use-package magit
-  :custom
-  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
-
 ;; NOTE: Make sure to configure a GitHub token before using this package!
 ;; - https://magit.vc/manual/forge/Token-Creation.html#Token-Creation
 ;; - https://magit.vc/manual/ghub/Getting-Started.html#Getting-Started
 (use-package forge)
 
+(use-package magit
+  :ensure t)
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
@@ -530,9 +489,8 @@
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
    '("5f19cb23200e0ac301d42b880641128833067d341d22344806cdad48e6ec62f6" "6c531d6c3dbc344045af7829a3a20a09929e6c41d7a7278963f7d3215139f6a7" "c4063322b5011829f7fdd7509979b5823e8eea2abf1fe5572ec4b7af1dd78519" default))
- '(lsp-haskell-formatting-provider "fourmolu")
  '(package-selected-packages
-   '(org-roam evil htmlize key-chord evil-leader tabbar haskell-mode lsp-haskell dired-hide-dotfiles dired-open all-the-icons-dired dired-single which-key vterm visual-fill-column use-package typescript-mode rainbow-delimiters pyvenv python-mode org-bullets no-littering lsp-ui lsp-ivy ivy-rich ivy-prescient helpful general forge eterm-256color eshell-git-prompt doom-themes doom-modeline dap-mode counsel-projectile company-box command-log-mode auto-package-update)))
+   '(rustic org-roam evil htmlize key-chord evil-leader tabbar dired-hide-dotfiles dired-open all-the-icons-dired dired-single which-key vterm visual-fill-column use-package typescript-mode rainbow-delimiters pyvenv python-mode org-bullets no-littering ivy-rich ivy-prescient helpful general forge eterm-256color eshell-git-prompt doom-themes doom-modeline dap-mode counsel-projectile company-box command-log-mode auto-package-update)))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -540,19 +498,6 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
-
-(use-package lsp-haskell
-  :after lsp)
-
-(use-package haskell-mode
-  :after lsp)
-
-(require 'lsp)
-(require 'haskell-mode)
-(require 'lsp-haskell)
-;; Hooks so haskell and literate haskell major modes trigger LSP setup
-(add-hook 'haskell-mode-hook #'lsp)
-(add-hook 'haskell-literate-mode-hook #'lsp)
 
 (defun switch-to-last-buffer ()
   (interactive)
@@ -580,9 +525,9 @@
 (global-evil-leader-mode)
 (evil-leader/set-leader ",")
 (evil-leader/set-key
-  "b b" 'switch-to-buffer
-  "b w" 'save-buffer
-  "b k" 'kill-buffer
+  "t b" 'switch-to-buffer
+  "t t" 'save-buffer
+  "t k" 'kill-buffer
   "w o" 'other-window
   "w d" 'delete-window
   "w r" 'delete-other-window
@@ -596,7 +541,7 @@
   "p b" 'projectile-switch-to-buffer
   "s" 'swiper
   "m" 'magit
-  "t" 'treemacs
+  "l t" 'treemacs
   "d" 'dired
   "l f" 'lsp-format-buffer)
 
@@ -657,5 +602,40 @@
          ("C-M-i"    . completion-at-point))
   :config
   (org-roam-setup))
+
+(setq select-enable-clipboard t)
+(setq select-enable-primary t)
+
+;; rustic is an extension of rust-mode which adds a number of useful features (see the its github readme) to it. It is the core of the setup and you can use just it without any other Emacs packages (and without rust-analyzer) if you just want code highlighting, compilation and cargo commands bound to emacs shortcuts, and a few other features.
+
+(use-package rustic
+  :ensure
+  :bind (:map rustic-mode-map
+              ("M-j" . lsp-ui-imenu)
+              ("M-?" . lsp-find-references)
+              ("C-c C-c l" . flycheck-list-errors)
+              ("C-c C-c a" . lsp-execute-code-action)
+              ("C-c C-c r" . lsp-rename)
+              ("C-c C-c q" . lsp-workspace-restart)
+              ("C-c C-c Q" . lsp-workspace-shutdown)
+              ("C-c C-c s" . lsp-rust-analyzer-status))
+  :config
+  ;; uncomment for less flashiness
+   (setq lsp-eldoc-hook nil)
+  ;; (setq lsp-enable-symbol-highlighting nil)
+  ;; (setq lsp-signature-auto-activate nil)
+
+  ;; comment to disable rustfmt on save
+  ;; (setq rustic-format-on-save t)
+  (add-hook 'rustic-mode-hook 'rk/rustic-mode-hook))
+
+(defun rk/rustic-mode-hook ()
+  ;; so that run C-c C-c C-r works without having to confirm, but don't try to
+  ;; save rust buffers that are not file visiting. Once
+  ;; https://github.com/brotzeit/rustic/issues/253 has been resolved this should
+  ;; no longer be necessary.
+  (when buffer-file-name
+    (setq-local buffer-save-without-query t))
+  (add-hook 'before-save-hook 'lsp-format-buffer nil t))
 
 
