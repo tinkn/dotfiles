@@ -34,6 +34,13 @@
   :config
   (auto-package-update-maybe))
 
+(defun my-minibuffer-setup-hook () (setq gc-cons-threshold (* 640 1024 1024)))
+
+(defun my-minibuffer-exit-hook () (setq gc-cons-threshold (* 32 1024 1024)))
+
+(add-hook 'minibuffer-setup-hook #'my-minibuffer-setup-hook)
+
+(add-hook 'minibuffer-exit-hook #'my-minibuffer-exit-hook)
 ;; NOTE: If you want to move everything out of the ~/.emacs.d folder
 ;; reliably, set `user-emacs-directory` before loading no-littering!
 ;(setq user-emacs-directory "~/.cache/emacs")
@@ -368,7 +375,7 @@
                                        :cargo ( :buildScripts (:enable t)
                                                 :features "all"))))))
 
-;;(use-package flycheck :ensure)
+(use-package flycheck :ensure)
 
 
 (use-package treemacs-evil)
@@ -530,7 +537,7 @@
   "t k" 'kill-buffer
   "w o" 'other-window
   "w d" 'delete-window
-  "w r" 'delete-other-window
+  "w r" 'delete-other-windows
   "w h" 'split-window-right
   "w v" 'split-window-below
   "p p" 'projectile-switch-project
@@ -543,7 +550,9 @@
   "m" 'magit
   "l t" 'treemacs
   "d" 'dired
-  "l f" 'lsp-format-buffer)
+  "l f" 'eglot-format-buffer
+  "x f" 'xref-find-references
+  "x g" 'xref-quit-and-goto-xref)
 
 
 (use-package htmlize)
@@ -622,8 +631,8 @@
   :config
   ;; uncomment for less flashiness
    (setq lsp-eldoc-hook nil)
-  ;; (setq lsp-enable-symbol-highlighting nil)
-  ;; (setq lsp-signature-auto-activate nil)
+   (setq lsp-enable-symbol-highlighting nil)
+   (setq lsp-signature-auto-activate nil)
 
   ;; comment to disable rustfmt on save
   ;; (setq rustic-format-on-save t)
@@ -636,6 +645,6 @@
   ;; no longer be necessary.
   (when buffer-file-name
     (setq-local buffer-save-without-query t))
-  (add-hook 'before-save-hook 'lsp-format-buffer nil t))
+  (add-hook 'before-save-hook 'eglot-format-buffer nil t))
 
 
