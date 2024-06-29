@@ -346,6 +346,12 @@
 (org-babel-do-load-languages
   'org-babel-load-languages
     '((python . t)))
+  ;;  '((rust . t)))
+
+(require 'ob-rust)
+
+;; Add cargo as a rust execution path for org babel
+;; (setq org-babel-rust-command "cargo script")
 
 (push '("conf-unix" . conf-unix) org-src-lang-modes)
 
@@ -497,7 +503,7 @@
  '(custom-safe-themes
    '("5f19cb23200e0ac301d42b880641128833067d341d22344806cdad48e6ec62f6" "6c531d6c3dbc344045af7829a3a20a09929e6c41d7a7278963f7d3215139f6a7" "c4063322b5011829f7fdd7509979b5823e8eea2abf1fe5572ec4b7af1dd78519" default))
  '(package-selected-packages
-   '(rustic org-roam evil htmlize key-chord evil-leader tabbar dired-hide-dotfiles dired-open all-the-icons-dired dired-single which-key vterm visual-fill-column use-package typescript-mode rainbow-delimiters pyvenv python-mode org-bullets no-littering ivy-rich ivy-prescient helpful general forge eterm-256color eshell-git-prompt doom-themes doom-modeline dap-mode counsel-projectile company-box command-log-mode auto-package-update)))
+   '(cargo rustic org-roam evil htmlize key-chord evil-leader tabbar dired-hide-dotfiles dired-open all-the-icons-dired dired-single which-key vterm visual-fill-column use-package typescript-mode rainbow-delimiters pyvenv python-mode org-bullets no-littering ivy-rich ivy-prescient helpful general forge eterm-256color eshell-git-prompt doom-themes doom-modeline dap-mode counsel-projectile company-box command-log-mode auto-package-update)))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -533,8 +539,13 @@
 (evil-leader/set-leader ",")
 (evil-leader/set-key
   "t b" 'switch-to-buffer
-  "t t" 'save-buffer
+  "t s" 'save-buffer
   "t k" 'kill-buffer
+  "b t" 'org-babel-tangle
+  "b d" 'org-babel-detangle
+  "b s" 'org-babel-execute-src-block
+  "c" 'compile
+  "s" 'swiper
   "w o" 'other-window
   "w d" 'delete-window
   "w r" 'delete-other-windows
@@ -546,13 +557,13 @@
   "p i" 'projectile-ibuffer
   "p k" 'projectile-kill-buffers
   "p b" 'projectile-switch-to-buffer
-  "s" 'swiper
   "m" 'magit
   "l t" 'treemacs
   "d" 'dired
   "l f" 'eglot-format-buffer
   "x f" 'xref-find-references
-  "x g" 'xref-quit-and-goto-xref)
+  "x g" 'xref-quit-and-goto-xref
+  "x d" 'flymake-show-project-diagnostics)
 
 
 (use-package htmlize)
