@@ -47,6 +47,11 @@
 
 (use-package no-littering)
 
+(use-package company
+  :ensure t
+  :config
+  ;; Enable company-mode globally
+  (global-company-mode 1))
 ;; no-littering doesn't set this by default so we must place
 ;; auto save files in the same path as it uses for sessions
 (setq auto-save-file-name-transforms
@@ -96,7 +101,7 @@
 (use-package command-log-mode)
 
 (use-package doom-themes
-  :init (load-theme 'doom-gruvbox t))
+  :init (load-theme 'doom-one t))
 
 (use-package all-the-icons)
 
@@ -501,9 +506,9 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   '("5f19cb23200e0ac301d42b880641128833067d341d22344806cdad48e6ec62f6" "6c531d6c3dbc344045af7829a3a20a09929e6c41d7a7278963f7d3215139f6a7" "c4063322b5011829f7fdd7509979b5823e8eea2abf1fe5572ec4b7af1dd78519" default))
+   '("56044c5a9cc45b6ec45c0eb28df100d3f0a576f18eef33ff8ff5d32bac2d9700" "88f7ee5594021c60a4a6a1c275614103de8c1435d6d08cc58882f920e0cec65e" "5f19cb23200e0ac301d42b880641128833067d341d22344806cdad48e6ec62f6" "6c531d6c3dbc344045af7829a3a20a09929e6c41d7a7278963f7d3215139f6a7" "c4063322b5011829f7fdd7509979b5823e8eea2abf1fe5572ec4b7af1dd78519" default))
  '(package-selected-packages
-   '(lsp-mode cargo rustic org-roam evil htmlize key-chord evil-leader tabbar dired-hide-dotfiles dired-open all-the-icons-dired dired-single which-key vterm visual-fill-column use-package typescript-mode rainbow-delimiters pyvenv python-mode org-bullets no-littering ivy-rich ivy-prescient helpful general forge eterm-256color eshell-git-prompt doom-themes doom-modeline dap-mode counsel-projectile company-box command-log-mode auto-package-update)))
+   '(company lsp-treemacs lsp-mode cargo rustic org-roam evil htmlize key-chord dired-hide-dotfiles dired-open all-the-icons-dired dired-single which-key vterm visual-fill-column use-package typescript-mode rainbow-delimiters pyvenv python-mode org-bullets no-littering ivy-rich ivy-prescient helpful general forge eterm-256color eshell-git-prompt doom-themes doom-modeline dap-mode counsel-projectile company-box command-log-mode auto-package-update)))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -523,54 +528,111 @@
 
 (setq show-paren-delay 0)
 (show-paren-mode 1)
-(use-package evil)
-(use-package evil-leader)
-(use-package key-chord)
 
-(require 'evil)
-(evil-mode t)
+(use-package evil
+  :ensure t
+  :init
+  (setq evil-want-integration t) ;; This is optional, but helpful if you use other packages that integrate with evil
+  :config
+  (evil-mode 1))
 
-(require 'key-chord)
-(key-chord-mode 1)
-(key-chord-define evil-insert-state-map ";l" 'evil-normal-state)
 
-(require 'evil-leader)
-(global-evil-leader-mode)
-(evil-leader/set-leader ",")
-(evil-leader/set-key
-  "t b" 'switch-to-buffer
-  "t s" 'save-buffer
-  "t k" 'kill-buffer
-  "b t" 'org-babel-tangle
-  "b d" 'org-babel-detangle
-  "b s" 'org-babel-execute-src-block
-  "c" 'compile
-  "s" 'swiper
-  "o c" 'org-cycle
-  "o g" 'org-global-cycle
-  "o h" 'org-previous-visible-heading
-  "o p" 'org-previous-block
-  "o n" 'org-next-visible-heading
-  "o N" 'org-next-block
-  "w o" 'other-window
-  "w d" 'delete-window
-  "w r" 'delete-other-windows
-  "w h" 'split-window-right
-  "w v" 'split-window-below
-  "p p" 'projectile-switch-project
-  "p c" 'counsel-projectile
-  "p r" 'projectile-ripgrep
-  "p i" 'projectile-ibuffer
-  "p k" 'projectile-kill-buffers
-  "p b" 'projectile-switch-to-buffer
-  "m" 'magit
-  "l t" 'treemacs
-  "d" 'dired
-  "l f" 'eglot-format-buffer
-  "x f" 'xref-find-references
-  "x g" 'xref-quit-and-goto-xref
-  "x d" 'flymake-show-project-diagnostics)
+(require 'general)
 
+(use-package general
+  :ensure t
+  :config
+  (general-evil-setup t)
+  (general-create-definer my-leader-def
+    :keymaps '(normal insert visual emacs)
+    :prefix ","
+    :global-prefix "C-,"
+    :prefix-command 'my-leader-prefix
+    :prefix-map 'my-leader-map
+    :prefix-doc '(("o" . "Contains org commands")
+                  ("p" . "Contains projectile commands")
+                  ("b" . "Contains babel commands")
+                  ("c" . "Compilation commands")
+                  ("s" . "Search and navigate commands")
+                  ("w" . "Window management commands")
+                  ("m" . "Magit commands")
+                  ("l" . "Language and tools commands")
+                  ("x" . "Cross-reference commands")
+                  ("n" . "Navigation commands")
+                  ("h" . "Code folding commands")
+                  ("d" . "Dired commands")
+                  ("t" . "Basic commands")))
+
+  (my-leader-def
+    "t"  '(:ignore t :which-key "Buffer cmds.")
+    "t b" 'switch-to-buffer
+    "t s" 'save-buffer
+    "t f" 'find-file
+    "t k" 'kill-buffer
+
+    "b"  '(:ignore b :which-key "Babel cmds.")
+    "b t" 'org-babel-tangle
+    "b d" 'org-babel-detangle
+    "b s" 'org-babel-execute-src-block
+    "c" 'compile
+    "s" 'swiper 
+
+    "o"  '(:ignore o :which-key "Org cmds.")
+    "o c" 'org-cycle
+    "o g" 'org-global-cycle
+    "o h" 'org-previous-visible-heading
+    "o p" 'org-previous-block
+    "o n" 'org-next-visible-heading
+    "o N" 'org-next-block
+
+    "w"  '(:ignore w :which-key "Window mgmt.")
+    "w o" 'other-window
+    "w d" 'delete-window
+    "w r" 'delete-other-windows
+    "w h" 'split-window-right
+    "w v" 'split-window-below
+    
+    "p"  '(:ignore p :which-key "Projectile")
+    "p p" 'projectile-switch-project
+    "p c" 'counsel-projectile
+    "p r" 'projectile-ripgrep
+    "p i" 'projectile-ibuffer
+    "p k" 'projectile-kill-buffers
+    "p b" 'projectile-switch-to-buffer
+    
+    "m" 'magit
+    "d" 'dired
+    
+    "l"  '(:ignore l :which-key "Lang & tools")
+    "l t" 'treemacs
+    "l f" 'eglot-format-buffer
+
+    "x"  '(:ignore x :which-key "Cross reference")
+    "x f" 'xref-find-references
+    "x g" 'xref-quit-and-goto-xref
+    "x d" 'flymake-show-project-diagnostics
+    
+    "n"  '(:ignore n :which-key "Navigation")
+    "n i" 'imenu
+    "n n" 'my-next-function
+    "n p" 'my-previous-function
+
+    "h"  '(:ignore h :which-key "Code folding")
+    "h t" 'hs-toggle-hiding
+    "h e" 'hs-show-block
+    "h s" 'hs-show-all
+    "h c" 'hs-hide-block
+    "h h" 'hs-hide-all))
+
+(with-eval-after-load 'evil
+  (general-add-hook 'after-init-hook
+                    (lambda (&rest _)
+                      (when-let ((messages-buffer (get-buffer "*Messages*")))
+                        (with-current-buffer messages-buffer
+                          (evil-normalize-keymaps))))
+                    nil
+                    nil
+                    t))
 
 (use-package htmlize)
 (require 'htmlize)
@@ -619,7 +681,7 @@
   :init
   (setq org-roam-v2-ack t)
   :custom
-  (org-roam-directory "~/roam")
+  (org-roam-directory "~/org")
   (org-roam-completion-everywhere t)
   :bind (("C-c n l" . org-roam-buffer-toggle)
          ("C-c n f" . org-roam-node-find)
@@ -635,33 +697,33 @@
 ;; rustic is an extension of rust-mode which adds a number of useful features (see the its github readme) to it. It is the core of the setup and you can use just it without any other Emacs packages (and without rust-analyzer) if you just want code highlighting, compilation and cargo commands bound to emacs shortcuts, and a few other features.
 
 (use-package rustic
-  :ensure
-  :bind (:map rustic-mode-map
-              ("M-j" . lsp-ui-imenu)
-              ("M-?" . lsp-find-references)
-              ("C-c C-c l" . flycheck-list-errors)
-              ("C-c C-c a" . lsp-execute-code-action)
-              ("C-c C-c r" . lsp-rename)
-              ("C-c C-c q" . lsp-workspace-restart)
-              ("C-c C-c Q" . lsp-workspace-shutdown)
-              ("C-c C-c s" . lsp-rust-analyzer-status))
+  :ensure t
   :config
   ;; uncomment for less flashiness
-   (setq lsp-eldoc-hook nil)
-   (setq lsp-enable-symbol-highlighting nil)
-   (setq lsp-signature-auto-activate nil)
+ ;;  (setq lsp-eldoc-hook nil)
+ ;;  (setq lsp-enable-symbol-highlighting nil)
+  (setq rustic-lsp-client 'eglot)  ;; You can also use lsp-mode if you prefer
+  (setq lsp-signature-auto-activate nil)
+  (setq rustic-format-on-save t)
+  (add-hook 'rustic-mode-hook 'company-mode))
 
-  ;; comment to disable rustfmt on save
-  ;; (setq rustic-format-on-save t)
-  (add-hook 'rustic-mode-hook 'rk/rustic-mode-hook))
+(defun hs-rustic-mode-hook ()
+  "Custom hook for `rustic-mode'."
+  (hs-minor-mode 1)
+  ;; Other customizations...
+  )
 
-(defun rk/rustic-mode-hook ()
-  ;; so that run C-c C-c C-r works without having to confirm, but don't try to
-  ;; save rust buffers that are not file visiting. Once
-  ;; https://github.com/brotzeit/rustic/issues/253 has been resolved this should
-  ;; no longer be necessary.
-  (when buffer-file-name
-    (setq-local buffer-save-without-query t))
-  (add-hook 'before-save-hook 'eglot-format-buffer nil t))
+(add-hook 'rustic-mode-hook 'hs-rustic-mode-hook)
 
+(defun my-next-function ()
+  "Move cursor to the next function definition."
+  (interactive)
+  (re-search-forward "fn " nil t)
+  (beginning-of-line))
+
+(defun my-previous-function ()
+  "Move cursor to the previous function definition."
+  (interactive)
+  (re-search-backward "fn " nil t)
+  (beginning-of-line))
 
