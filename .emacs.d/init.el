@@ -86,13 +86,15 @@
                 eshell-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
-;;(set-face-attribute 'default nil :font "Fira Code Retina" :height efs/default-font-size)
+(set-face-attribute 'default nil :font "Fira Code Retina" :height efs/default-font-size)
 
 ;; Set the fixed pitch face
 (set-face-attribute 'fixed-pitch nil :font "Inconsolata" :height efs/default-font-size)
 
 ;; Set the variable pitch face
-(set-face-attribute 'variable-pitch nil :font "Cantarell" :height efs/default-variable-font-size :weight 'regular)
+(set-face-attribute 'variable-pitch nil :family "Roboto" :height efs/default-variable-font-size :weight 'regular)
+
+(add-hook 'org-mode-hook 'variable-pitch-mode)
 
 ;; Make ESC quit prompts
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
@@ -189,7 +191,7 @@
                   (org-level-6 . 1.1)
                   (org-level-7 . 1.1)
                   (org-level-8 . 1.1)))
-    (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
+    (set-face-attribute (car face) nil :font "FiraSans-Regular" :weight 'regular :height (cdr face)))
 
   ;; Ensure that anything that should be fixed-pitch in Org files appears that way
   (set-face-attribute 'org-block nil    :foreground nil :inherit 'fixed-pitch)
@@ -584,6 +586,13 @@
     "o p" 'org-previous-block
     "o n" 'org-next-visible-heading
     "o N" 'org-next-block
+    "o i" 'org-toggle-inline-images
+    "o o" 'org-open-at-point
+    "o m" 'org-mark-ring-goto
+
+    "r"  '(:ignore o :which-key "Roam cmds.")
+    "r f" 'org-roam-node-find
+    "r i" 'org-roam-node-insert
 
     "w"  '(:ignore w :which-key "Window mgmt.")
     "w o" 'other-window
@@ -748,5 +757,8 @@
 (add-hook 'prog-mode-hook 'my-prog-mode-flyspell-setup)
 (setq ispell-program-name "aspell")
 (setq ispell-dictionary "en_US")  ;; Set default dictionary to "en_US"
+
+
+(setq org-link-frame-setup '((file . find-file)))
 
 
