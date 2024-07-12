@@ -510,7 +510,7 @@
  '(custom-safe-themes
    '("56044c5a9cc45b6ec45c0eb28df100d3f0a576f18eef33ff8ff5d32bac2d9700" "88f7ee5594021c60a4a6a1c275614103de8c1435d6d08cc58882f920e0cec65e" "5f19cb23200e0ac301d42b880641128833067d341d22344806cdad48e6ec62f6" "6c531d6c3dbc344045af7829a3a20a09929e6c41d7a7278963f7d3215139f6a7" "c4063322b5011829f7fdd7509979b5823e8eea2abf1fe5572ec4b7af1dd78519" default))
  '(package-selected-packages
-   '(dirvish dired-preview company lsp-treemacs lsp-mode cargo rustic org-roam evil htmlize key-chord dired-hide-dotfiles dired-open all-the-icons-dired dired-single which-key vterm visual-fill-column use-package typescript-mode rainbow-delimiters pyvenv python-mode org-bullets no-littering ivy-rich ivy-prescient helpful general forge eterm-256color eshell-git-prompt doom-themes doom-modeline dap-mode counsel-projectile company-box command-log-mode auto-package-update)))
+   '(evil-colemak-basics dirvish dired-preview company lsp-treemacs lsp-mode cargo rustic org-roam evil htmlize key-chord dired-hide-dotfiles dired-open all-the-icons-dired dired-single which-key vterm visual-fill-column use-package typescript-mode rainbow-delimiters pyvenv python-mode org-bullets no-littering ivy-rich ivy-prescient helpful general forge eterm-256color eshell-git-prompt doom-themes doom-modeline dap-mode counsel-projectile company-box command-log-mode auto-package-update)))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -762,3 +762,8 @@
 (setq org-link-frame-setup '((file . find-file)))
 
 
+(use-package evil-colemak-basics
+  :init
+  (setq evil-colemak-basics-layout-mod 'mod-dh)
+  :config
+  (global-evil-colemak-basics-mode))
