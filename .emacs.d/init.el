@@ -767,3 +767,7 @@
   (setq evil-colemak-basics-layout-mod 'mod-dh)
   :config
   (global-evil-colemak-basics-mode))
+
+(evil-set-initial-state 'xref--xref-buffer-mode 'emacs)
+;; Add eglot's xref backend
+(add-hook 'xref-backend-functions #'eglot-xref-backend nil t)
