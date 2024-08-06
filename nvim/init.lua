@@ -20,8 +20,29 @@ vim.o.smartindent = true  -- Smart auto-indenting
 -- ==                             KEYBINDINGS                              == --
 -- ========================================================================== --
 
+-- Remap keys in normal mode
+vim.api.nvim_set_keymap('n', 'm', 'h', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', 'n', 'j', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', 'e', 'k', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', 'i', 'l', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', 'u', 'i', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', 'l', 'u', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', 'k', 'n', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', 'K', 'N', { noremap = true, silent = true })
+
+-- Remap keys in visual mode
+vim.api.nvim_set_keymap('v', 'm', 'h', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('v', 'n', 'j', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('v', 'e', 'k', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('v', 'i', 'l', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('v', 'u', 'i', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('v', 'l', 'u', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('v', 'k', 'n', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('v', 'K', 'N', { noremap = true, silent = true })
+vim.opt.clipboard = "unnamedplus"
+
 -- Space as leader key
-vim.g.mapleader = ' '
+vim.g.mapleader = ','
 
 -- Shortcuts
 vim.keymap.set({'n', 'x', 'o'}, '<leader>h', '^')
