@@ -352,8 +352,8 @@
 
 (org-babel-do-load-languages
   'org-babel-load-languages
-    '((python . t)))
-  ;;  '((rust . t)))
+    '((python . t)
+     (d2 . t)))
 
 (require 'ob-rust)
 
@@ -771,3 +771,4 @@
 (evil-set-initial-state 'xref--xref-buffer-mode 'emacs)
 ;; Add eglot's xref backend
 (add-hook 'xref-backend-functions #'eglot-xref-backend nil t)
+
