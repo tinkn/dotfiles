@@ -41,11 +41,17 @@
 (add-hook 'minibuffer-setup-hook #'my-minibuffer-setup-hook)
 
 (add-hook 'minibuffer-exit-hook #'my-minibuffer-exit-hook)
+
+(setq org-src-fontify-natively t)
+
 ;; NOTE: If you want to move everything out of the ~/.emacs.d folder
 ;; reliably, set `user-emacs-directory` before loading no-littering!
 ;(setq user-emacs-directory "~/.cache/emacs")
 
 (use-package no-littering)
+
+(setq ediff-window-setup-function 'ediff-setup-windows-plain)
+(setq ediff-split-window-function 'split-window-horizontally) ; side-by-side (default)
 
 (use-package company
   :ensure t
