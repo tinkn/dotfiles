@@ -298,8 +298,20 @@
   (efs/org-font-setup))
 
 (setq org-default-notes-file "~/org/inbox.org")
-(global-set-key (kbd "C-c c") 'org-capture)
 
+(global-set-key (kbd "C-c c") 'org-capture)
+(global-set-key (kbd "C-c v") 'dirvish)
+(global-set-key (kbd "C-c e") 'mu4e)
+
+;; Define a prefix map under C-x x
+(define-prefix-command 'my-xref-map)
+(define-key global-map (kbd "C-c x") 'my-xref-map)
+
+;; Bind individual xref commands to single letters
+(define-key my-xref-map (kbd "d") #'xref-find-definitions)
+(define-key my-xref-map (kbd "r") #'xref-find-references)
+(define-key my-xref-map (kbd "b") #'xref-pop-marker-stack)
+(define-key my-xref-map (kbd "a") #'xref-find-apropos)
 
 (setq org-capture-templates
       '(
@@ -317,7 +329,11 @@
 
         ("i" "Inbox (for later triage)" entry
          (file+headline "~/org/inbox.org" "Tasks")
-         "* TODO %?\n  :PROPERTIES:\n  :CREATED: %U\n  :END:\n ")))
+         "* TODO %?\n  :PROPERTIES:\n  :CREATED: %U\n  :END:\n ")
+
+        ("e" "Email follow-up" entry
+         (file+headline "~/org/inbox.org" "Email Tasks")
+         "* TODO Follow up with %:fromname on %:subject\n%a\n")))
 
 (use-package org-bullets
   :after org
@@ -493,16 +509,27 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   '("56044c5a9cc45b6ec45c0eb28df100d3f0a576f18eef33ff8ff5d32bac2d9700" "88f7ee5594021c60a4a6a1c275614103de8c1435d6d08cc58882f920e0cec65e" "5f19cb23200e0ac301d42b880641128833067d341d22344806cdad48e6ec62f6" "6c531d6c3dbc344045af7829a3a20a09929e6c41d7a7278963f7d3215139f6a7" "c4063322b5011829f7fdd7509979b5823e8eea2abf1fe5572ec4b7af1dd78519" default))
- '(package-selected-packages
-   '(evil-colemak-basics dirvish dired-preview company lsp-treemacs lsp-mode cargo rustic org-roam evil htmlize key-chord dired-hide-dotfiles dired-open all-the-icons-dired dired-single which-key vterm visual-fill-column use-package typescript-mode rainbow-delimiters pyvenv python-mode org-bullets no-littering ivy-rich ivy-prescient helpful general forge eterm-256color eshell-git-prompt doom-themes doom-modeline dap-mode counsel-projectile company-box command-log-mode auto-package-update)))
+   '("56044c5a9cc45b6ec45c0eb28df100d3f0a576f18eef33ff8ff5d32bac2d9700"
+     "88f7ee5594021c60a4a6a1c275614103de8c1435d6d08cc58882f920e0cec65e"
+     "5f19cb23200e0ac301d42b880641128833067d341d22344806cdad48e6ec62f6"
+     "6c531d6c3dbc344045af7829a3a20a09929e6c41d7a7278963f7d3215139f6a7"
+     "c4063322b5011829f7fdd7509979b5823e8eea2abf1fe5572ec4b7af1dd78519"
+     default))
+ '(package-selected-packages nil)
+ '(package-vc-selected-packages
+   '((mu4e-thread-folding :vc-backend Git :url
+			  "https://github.com/rougier/mu4e-thread-folding"))))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(mu4e-thread-folding-child-face ((t (:extend t :background "#2a2a2a"))))
+ '(mu4e-thread-folding-line-face ((t (:foreground "#555555"))))
+ '(mu4e-thread-folding-root-folded-face ((t (:extend t :background "#3a2a1a"))))
+ '(mu4e-thread-folding-root-unfolded-face ((t (:extend t :background "#1a3a3a"))))
+ '(mu4e-thread-folding-single-face ((t (:extend t :background "#2a2a30")))))
 
 (defun switch-to-last-buffer ()
   (interactive)
@@ -523,6 +550,7 @@
   :config
   (evil-mode 1))
 
+(global-set-key (kbd "C-c a") 'org-agenda)
 
 (require 'general)
 
@@ -756,6 +784,7 @@
 
 
 (use-package evil-colemak-basics
+  :after evil
   :init
   (setq evil-colemak-basics-layout-mod 'mod-dh)
   :config
@@ -764,4 +793,154 @@
 (evil-set-initial-state 'xref--xref-buffer-mode 'emacs)
 ;; Add eglot's xref backend
 (add-hook 'xref-backend-functions #'eglot-xref-backend nil t)
+
+(use-package evil-collection
+  :ensure t
+  :after (evil evil-colemak-basics)
+  :config
+  (evil-collection-init))
+
+;; Mu4e identity first (before use-package)
+(setq mail-user-agent 'mu4e-user-agent
+      user-full-name "Nithin Mani"
+      user-mail-address "nithin@cosdata.io")
+
+(use-package mu4e
+  :ensure nil
+  :config
+  ;; Basic mu4e settings
+  (setq mu4e-change-filenames-when-moving t)
+  (setq mu4e-update-interval (* 10 60))
+  (setq mu4e-get-mail-command "mbsync -a")
+  
+  ;; Mail directory - matches your mbsync MaildirStore Path
+  (setq mu4e-maildir "~/mail/zoho/")
+  
+  ;; Folder configuration - matches your mbsync setup
+  (setq mu4e-drafts-folder "/Drafts")
+  (setq mu4e-sent-folder   "/Sent")  
+  (setq mu4e-trash-folder  "/Trash")
+  (setq mu4e-refile-folder "/INBOX")
+
+  ;; Prefer HTML when available
+  (setq mu4e-view-prefer-html t)
+  ;; Use built-in HTML renderer instead of w3m
+  (setq mu4e-html2text-command 'mu4e-shr2text)
+
+  ;; Enable images
+  (setq mu4e-view-show-images t)
+  (setq mu4e-view-image-max-width 800)
+  
+  ;;(setq mu4e-compose-keep-self-cc nil)
+
+  (setq mu4e-compose-format-flowed t)
+  (setq fill-flowed-encode-column 9999)
+  (setq message-fill-column 9999)
+
+  ;; Add this hook inside the mu4e config too
+  (add-hook 'mu4e-compose-mode-hook
+          (lambda ()
+            (auto-fill-mode -1)
+            (setq fill-column 9999)))
+  (setq mu4e-compose-dont-reply-to-self t)
+
+  ;;(setq fill-flowed-encode-column 998)
+  (setq message-kill-buffer-on-exit t)   ; You already have this
+  (setq mu4e-compose-in-new-frame nil)   ; Don't use new frames for compose
+  ;; Configure shr for better rendering
+  (setq shr-color-visible-luminance-min 60)
+  (setq shr-use-colors nil)
+  (setq shr-width 80)
+  ;; Maildir shortcuts
+  (setq mu4e-maildir-shortcuts
+      '(("/INBOX"    . ?i)
+        ("/Sent"     . ?s)
+        ("/Trash"    . ?t)
+        ("/Drafts"   . ?d)))
+
+  (setq mu4e-headers-show-threads t) ; Enable threading
+  (add-to-list 'mu4e-headers-actions
+             '("Capture to Org" . mu4e-action-capture-message) t)
+  (add-to-list 'mu4e-view-actions
+             '("Capture to Org" . mu4e-action-capture-message) t)
+
+  (setq mu4e-headers-fields
+      '((:human-date . 12)
+        (:flags      . 6)
+        (:from       . 22)
+        (:subject    . nil)))
+  ;; SMTP configuration for sending mail
+  (setq message-send-mail-function 'smtpmail-send-it
+        smtpmail-smtp-server "smtppro.zoho.in"
+        smtpmail-smtp-service 587
+        smtpmail-stream-type 'starttls
+        smtpmail-auth-credentials "~/.authinfo.gpg")
+
+  ;; Additional useful settings
+  (setq mu4e-compose-signature-auto-include nil
+        mu4e-view-show-images t
+        mu4e-view-show-addresses t
+        mu4e-attachment-dir "~/Downloads"
+        mu4e-compose-format-flowed t
+        message-kill-buffer-on-exit t)
+  ;;(setq mu4e-compose-format-flowed nil) ; <-- Ensure this is off for HTML email
+  )
+ 
+;; put this near the end of your init after evil & mu4e are loaded
+(with-eval-after-load 'mu4e
+  (defun my/mu4e-view-nav-keys ()
+    "Colemak-friendly next/prev message keys in mu4e‑view."
+    (evil-define-key 'normal mu4e-view-mode-map
+      (kbd "C-n") #'mu4e-view-headers-next
+      (kbd "C-e") #'mu4e-view-headers-prev))
+  (add-hook 'mu4e-view-mode-hook #'my/mu4e-view-nav-keys))
+
+;; Install and require mu4e-thread-folding
+(unless (package-installed-p 'mu4e-thread-folding)
+  (package-vc-install "https://github.com/rougier/mu4e-thread-folding"))
+
+(use-package mu4e-thread-folding
+  :after mu4e
+  :config
+  ;; Enable visual indicators
+  (setq mu4e-thread-folding-show-folding-lines t)
+
+  (custom-set-faces
+ ;; Child messages in threads
+ '(mu4e-thread-folding-child-face ((t (:extend t :background "#2a2a2a"))))
+ 
+ ;; Root messages of unfolded threads
+ '(mu4e-thread-folding-root-unfolded-face ((t (:extend t :background "#1a3a3a"))))
+ 
+ ;; Root messages of folded threads
+ '(mu4e-thread-folding-root-folded-face ((t (:extend t :background "#3a2a1a"))))
+ 
+ ;; Single emails - slightly different color to distinguish from threaded
+ '(mu4e-thread-folding-single-face ((t (:extend t :background "#2a2a30"))))
+ 
+ ;; Thread folding lines
+ '(mu4e-thread-folding-line-face ((t (:foreground "#555555")))))
+
+    ;; Hook function to set up keybindings after Evil loads
+  (defun my/mu4e-thread-folding-setup ()
+    "Set up thread folding with Evil-compatible keybindings."
+    (mu4e-thread-folding-mode 1)
+    
+    ;; Use Evil's define-key to override the bindings
+    (evil-define-key 'normal mu4e-headers-mode-map
+      (kbd "f") #'mu4e-headers-toggle-at-point
+      (kbd "zf") #'mu4e-headers-fold-at-point        ; Use z prefix like Vim
+      (kbd "zF") #'mu4e-headers-fold-all
+      (kbd "zo") #'mu4e-headers-unfold-at-point
+      (kbd "zO") #'mu4e-headers-unfold-all)
+    
+    ;; Force Evil to recognize the new bindings
+    (evil-normalize-keymaps))
+  (add-hook 'mu4e-headers-mode-hook 'my/mu4e-thread-folding-setup))
+
+(with-eval-after-load 'org
+  (evil-define-key 'normal org-mode-map
+    (kbd "RET") 'org-open-at-point))
+
+
 

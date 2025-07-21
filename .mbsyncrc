@@ -1,0 +1,26 @@
+IMAPAccount zoho 
+Host imappro.zoho.in
+User nithin@cosdata.io
+PassCmd "xxxxx"
+TLSType IMAPS
+CertificateFile /etc/ssl/certs/ca-certificates.crt
+AuthMechs LOGIN
+PipelineDepth 1
+Timeout 60
+
+IMAPStore zoho-remote
+Account zoho
+
+MaildirStore zoho-local
+Path ~/mail/zoho/
+Inbox ~/mail/zoho/INBOX
+SubFolders Verbatim   # keep names as-is
+
+Channel zoho
+Far :zoho-remote:
+Near :zoho-local:
+Create Both
+Sync All
+Expunge Both
+Patterns *
+SyncState *
