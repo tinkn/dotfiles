@@ -189,14 +189,12 @@
                              (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
 
   ;; Set faces for heading levels
-  (dolist (face '((org-level-1 . 1.2)
-                  (org-level-2 . 1.1)
-                  (org-level-3 . 1.05)
-                  (org-level-4 . 1.0)
-                  (org-level-5 . 1.1)
-                  (org-level-6 . 1.1)
-                  (org-level-7 . 1.1)
-                  (org-level-8 . 1.1)))
+  (dolist (face '((org-level-1 . 1.5)
+                  (org-level-2 . 1.25)
+                  (org-level-3 . 1.12)
+                  (org-level-4 . 1.06)
+                  (org-level-5 . 1.0)
+                  (org-level-6 . 1.0)))
     (set-face-attribute (car face) nil :font "FiraSans-Regular" :weight 'regular :height (cdr face)))
 
   ;; Ensure that anything that should be fixed-pitch in Org files appears that way
@@ -334,12 +332,6 @@
         ("e" "Email follow-up" entry
          (file+headline "~/org/inbox.org" "Email Tasks")
          "* TODO Follow up with %:fromname on %:subject\n%a\n")))
-
-(use-package org-bullets
-  :after org
-  :hook (org-mode . org-bullets-mode)
-  :custom
-  (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
 
 ;;(defun efs/org-mode-visual-fill ()
 ;;  (setq visual-fill-column-width 100
@@ -504,20 +496,7 @@
      "6c531d6c3dbc344045af7829a3a20a09929e6c41d7a7278963f7d3215139f6a7"
      "c4063322b5011829f7fdd7509979b5823e8eea2abf1fe5572ec4b7af1dd78519"
      default))
- '(package-selected-packages
-   '(all-the-icons-dired auto-package-update command-log-mode company
-			 counsel-projectile dired-hide-dotfiles
-			 dired-open dired-preview dired-single dirvish
-			 doom-modeline doom-themes eshell-git-prompt
-			 eterm-256color 
-			 flycheck forge
-			 general git-commit helpful ivy-prescient
-			 ivy-rich json-mode key-chord lsp-treemacs
-			 mu4e-thread-folding no-littering notmuch
-			 notmuch-addr ob-d2 ob-rust org-bullets
-			 org-mime org-msg org-roam pyvenv
-			 rainbow-delimiters rustic 
-			 treemacs-projectile vterm which-key))
+ '(package-selected-packages nil)
  '(package-vc-selected-packages
    '((mu4e-thread-folding :vc-backend Git :url
 			  "https://github.com/rougier/mu4e-thread-folding"))))
@@ -699,17 +678,18 @@
   (notmuch-address-setup)
   (setq notmuch-address-use-company t)
 
-
+  (define-key notmuch-tree-mode-map (kbd "SPC") 'scroll-up-command)
+  (define-key notmuch-tree-mode-map (kbd "DEL") 'scroll-down-command)
   ;; Search configuration
   (setq notmuch-saved-searches
         '((:name "inbox" :query "tag:inbox" :key "i" :search-type tree)
-          (:name "unread" :query "tag:unread" :key "u")
-          (:name "sent" :query "tag:sent" :key "s")
-          (:name "drafts" :query "tag:draft" :key "d")
-          (:name "all mail" :query "*" :key "a")))
+          (:name "unread" :query "tag:unread" :key "u" :search-type tree)
+          (:name "sent" :query "tag:sent" :key "s" :search-type tree)
+          (:name "drafts" :query "tag:draft" :key "d" :search-type tree)
+          (:name "all mail" :query "*" :key "a" :search-type tree)))
   
   ;; Message display
-  (setq notmuch-show-logo nil)
+  (setq notmuch-show-logo t)
   (setq notmuch-message-headers '("Subject" "To" "Cc" "Date"))
   (setq notmuch-message-headers-visible t)
   
@@ -724,7 +704,7 @@
   (setq mm-text-html-renderer 'shr)
   (setq shr-color-visible-luminance-min 60)
   (setq shr-use-colors nil)
-  (setq shr-width 80)
+  (setq shr-width 120)
   
   ;; Composition settings
   (setq message-kill-buffer-on-exit t)
@@ -802,3 +782,6 @@ Nithin Mani | Founder, Cosdata
 (with-eval-after-load 'org-msg
   (add-hook 'org-msg-edit-mode-hook 'notmuch-address-setup))
 
+(use-package org-modern
+  :hook ((org-mode . org-modern-mode)
+         (org-agenda-finalize . org-modern-agenda)))
