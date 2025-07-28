@@ -699,9 +699,10 @@
   (notmuch-address-setup)
   (setq notmuch-address-use-company t)
 
+
   ;; Search configuration
   (setq notmuch-saved-searches
-        '((:name "inbox" :query "tag:inbox" :key "i")
+        '((:name "inbox" :query "tag:inbox" :key "i" :search-type tree)
           (:name "unread" :query "tag:unread" :key "u")
           (:name "sent" :query "tag:sent" :key "s")
           (:name "drafts" :query "tag:draft" :key "d")
@@ -731,9 +732,9 @@
 
   ;; Archive instead of delete
   (define-key notmuch-search-mode-map "d" 
-    (lambda () (interactive) (notmuch-search-add-tag '("+deleted" "-inbox"))))
+    (lambda () (interactive) (notmuch-search-add-tag '("+deleted" "-inbox" "-sent"))))
   (define-key notmuch-show-mode-map "d"
-    (lambda () (interactive) (notmuch-show-add-tag '("+deleted" "-inbox"))))
+    (lambda () (interactive) (notmuch-show-add-tag '("+deleted" "-inbox" "-sent"))))
   
   ;; Keep your update interval concept with a hook
   (run-at-time nil (* 5 60) 'notmuch-poll-and-refresh-this-buffer))
