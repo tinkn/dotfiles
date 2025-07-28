@@ -301,7 +301,7 @@
 
 (global-set-key (kbd "C-c c") 'org-capture)
 (global-set-key (kbd "C-c v") 'dirvish)
-(global-set-key (kbd "C-c e") 'mu4e)
+(global-set-key (kbd "C-c e") 'notmuch)
 
 ;; Define a prefix map under C-x x
 (define-prefix-command 'my-xref-map)
@@ -392,7 +392,6 @@
 (use-package flycheck :ensure)
 
 
-(use-package treemacs-evil)
 (use-package treemacs-projectile)
 
 
@@ -401,7 +400,6 @@
   :config
   (pyvenv-mode 1))
 
-
 (use-package projectile
   :diminish projectile-mode
   :config (projectile-mode)
@@ -409,15 +407,9 @@
   :bind-keymap
   ("C-c p" . projectile-command-map)
   :init
-  ;; NOTE: Set this to the folder where you keep your Git repos!
-  (when (file-directory-p "~/")
-    (setq projectile-project-search-path '("~/")))
+  ;; Add your specific project directories
+  (setq projectile-project-search-path '("~/org" "~/Orgzly" "~/cosdata"))
   (setq projectile-switch-project-action #'projectile-dired))
-
-(add-to-list 'load-path "~/")
-(require 'projectile)
-(projectile-global-mode) ;; to enable in all buffers
-
 
 (use-package counsel-projectile
   :config (counsel-projectile-mode))
@@ -451,9 +443,6 @@
   ;;(setq vterm-shell "zsh")                       ;; Set this to customize the shell to launch
   (setq vterm-max-scrollback 10000))
 
-(when (eq system-type 'windows-nt)
-  (setq explicit-shell-file-name "powershell.exe")
-  (setq explicit-powershell.exe-args '()))
 
 (defun efs/configure-eshell ()
   ;; Save command history when commands are entered
@@ -515,7 +504,20 @@
      "6c531d6c3dbc344045af7829a3a20a09929e6c41d7a7278963f7d3215139f6a7"
      "c4063322b5011829f7fdd7509979b5823e8eea2abf1fe5572ec4b7af1dd78519"
      default))
- '(package-selected-packages nil)
+ '(package-selected-packages
+   '(all-the-icons-dired auto-package-update command-log-mode company
+			 counsel-projectile dired-hide-dotfiles
+			 dired-open dired-preview dired-single dirvish
+			 doom-modeline doom-themes eshell-git-prompt
+			 eterm-256color 
+			 flycheck forge
+			 general git-commit helpful ivy-prescient
+			 ivy-rich json-mode key-chord lsp-treemacs
+			 mu4e-thread-folding no-littering notmuch
+			 notmuch-addr ob-d2 ob-rust org-bullets
+			 org-mime org-msg org-roam pyvenv
+			 rainbow-delimiters rustic 
+			 treemacs-projectile vterm which-key))
  '(package-vc-selected-packages
    '((mu4e-thread-folding :vc-backend Git :url
 			  "https://github.com/rougier/mu4e-thread-folding"))))
@@ -543,130 +545,9 @@
 (setq show-paren-delay 0)
 (show-paren-mode 1)
 
-(use-package evil
-  :ensure t
-  :init
-  (setq evil-want-integration t) ;; This is optional, but helpful if you use other packages that integrate with evil
-  :config
-  (evil-mode 1))
-
 (global-set-key (kbd "C-c a") 'org-agenda)
 
 (require 'general)
-
-(use-package general
-  :ensure t
-  :config
-  (general-evil-setup t)
-  (general-create-definer my-leader-def
-    :keymaps '(normal insert visual emacs)
-    :prefix ","
-    :global-prefix "C-,"
-    :prefix-command 'my-leader-prefix
-    :prefix-map 'my-leader-map
-    :prefix-doc '(("o" . "Contains org commands")
-                  ("p" . "Contains projectile commands")
-                  ("b" . "Contains babel commands")
-                  ("c" . "Compilation commands")
-                  ("s" . "Search and navigate commands")
-                  ("w" . "Window management commands")
-                  ("m" . "Magit commands")
-                  ("l" . "Language and tools commands")
-                  ("x" . "Cross-reference commands")
-                  ("n" . "Navigation commands")
-                  ("h" . "Code folding commands")
-                  ("d" . "Dired commands")
-                  ("t" . "Basic commands")))
-
-  (my-leader-def
-    "t"  '(:ignore t :which-key "Buffer cmds.")
-    "t b" 'switch-to-buffer
-    "t s" 'save-buffer
-    "t f" 'find-file
-    "t k" 'kill-buffer
-
-    "b"  '(:ignore b :which-key "Babel cmds.")
-    "b t" 'org-babel-tangle
-    "b d" 'org-babel-detangle
-    "b s" 'org-babel-execute-src-block
-    "c" 'compile
-    "s" 'swiper 
-
-    "o"  '(:ignore o :which-key "Org cmds.")
-    "o l" 'org-cycle
-    "o g" 'org-global-cycle
-    "o h" 'org-previous-visible-heading
-    "o p" 'org-previous-block
-    "o n" 'org-next-visible-heading
-    "o N" 'org-next-block
-    "o i" 'org-toggle-inline-images
-    "o o" 'org-open-at-point
-    "o m" 'org-mark-ring-goto
-    "o e" 'org-export-dispatch
-    "o a" 'org-agenda
-    "o t" 'org-todo
-    "o s" 'org-schedule
-    "o d" 'org-deadline
-    "o ," 'org-priority
-    "o c" 'org-capture
-
-
-    "r"  '(:ignore o :which-key "Roam cmds.")
-    "r f" 'org-roam-node-find
-    "r i" 'org-roam-node-insert
-
-    "w"  '(:ignore w :which-key "Window mgmt.")
-    "w o" 'other-window
-    "w d" 'delete-window
-    "w r" 'delete-other-windows
-    "w h" 'split-window-right
-    "w v" 'split-window-below
-    
-    "p"  '(:ignore p :which-key "Projectile")
-    "p p" 'projectile-switch-project
-    "p c" 'counsel-projectile
-    "p r" 'projectile-ripgrep
-    "p i" 'projectile-ibuffer
-    "p k" 'projectile-kill-buffers
-    "p b" 'projectile-switch-to-buffer
-    
-    "m" 'magit
-    "d" 'dired
-    "v" 'dirvish
-    
-    "l"  '(:ignore l :which-key "Lang & tools")
-    "l t" 'treemacs
-    "l s" 'ispell-word
-    "l f" 'flyspell-mode
-    "l b" 'flyspell-buffer
-    "l e" 'eglot-format-buffer
-
-    "x"  '(:ignore x :which-key "Cross reference")
-    "x f" 'xref-find-references
-    "x g" 'xref-quit-and-goto-xref
-    "x d" 'flymake-show-project-diagnostics
-    
-    "n"  '(:ignore n :which-key "Navigation")
-    "n i" 'imenu
-    "n n" 'my-next-function
-    "n p" 'my-previous-function
-
-    "h"  '(:ignore h :which-key "Code folding")
-    "h t" 'hs-toggle-hiding
-    "h e" 'hs-show-block
-    "h s" 'hs-show-all
-    "h c" 'hs-hide-block
-    "h h" 'hs-hide-all))
-
-(with-eval-after-load 'evil
-  (general-add-hook 'after-init-hook
-                    (lambda (&rest _)
-                      (when-let ((messages-buffer (get-buffer "*Messages*")))
-                        (with-current-buffer messages-buffer
-                          (evil-normalize-keymaps))))
-                    nil
-                    nil
-                    t))
 
 (use-package htmlize)
 (require 'htmlize)
@@ -782,165 +663,141 @@
 
 (setq org-link-frame-setup '((file . find-file)))
 
-
-(use-package evil-colemak-basics
-  :after evil
-  :init
-  (setq evil-colemak-basics-layout-mod 'mod-dh)
-  :config
-  (global-evil-colemak-basics-mode))
-
-(evil-set-initial-state 'xref--xref-buffer-mode 'emacs)
 ;; Add eglot's xref backend
 (add-hook 'xref-backend-functions #'eglot-xref-backend nil t)
 
-(use-package evil-collection
-  :ensure t
-  :after (evil evil-colemak-basics)
-  :config
-  (evil-collection-init))
-
-;; Mu4e identity first (before use-package)
-(setq mail-user-agent 'mu4e-user-agent
-      user-full-name "Nithin Mani"
+;; Or set notmuch as your default mail client
+(setq mail-user-agent 'notmuch-user-agent)
+(setq user-full-name "Nithin Mani"
       user-mail-address "nithin@cosdata.io")
 
-(use-package mu4e
-  :ensure nil
+(use-package notmuch
+  :ensure t
+  :init
+  (setq notmuch-search-oldest-first nil)
   :config
-  ;; Basic mu4e settings
-  (setq mu4e-change-filenames-when-moving t)
-  (setq mu4e-update-interval (* 10 60))
-  (setq mu4e-get-mail-command "mbsync -a")
+  ;; Basic notmuch settings
+  (setq notmuch-show-all-tags-list t)
+  (setq notmuch-hello-thousands-separator ",")
   
-  ;; Mail directory - matches your mbsync MaildirStore Path
-  (setq mu4e-maildir "~/mail/zoho/")
+  (setq message-default-fcc nil)                 ;; Disable fallback prompts
+  (setq notmuch-fcc-dirs "Sent/ -inbox -unread +sent")
+
+  (setq notmuch-fcc-dirs
+      '(("nithin@cosdata.io" . "nithin@cosdata.io/Sent/ -inbox -unread +sent +work")
+        ("nithin@inchiware.com" . "nithin@inchiware.com/Sent/ -inbox -unread +sent +personal")))
+
+  (setq notmuch-address-command "~/notmuch-address-complete")
+  (setq notmuch-address-internal-completion nil)
+
+;; Use notmuch's internal address completion
+;; (setq notmuch-address-command 'internal)
+;; Enable address completion from sent and received emails
+;; (setq notmuch-address-internal-completion '(sent received))
+
+  (require 'notmuch-address)
+  (notmuch-address-setup)
+  (setq notmuch-address-use-company t)
+
+  ;; Search configuration
+  (setq notmuch-saved-searches
+        '((:name "inbox" :query "tag:inbox" :key "i")
+          (:name "unread" :query "tag:unread" :key "u")
+          (:name "sent" :query "tag:sent" :key "s")
+          (:name "drafts" :query "tag:draft" :key "d")
+          (:name "all mail" :query "*" :key "a")))
   
-  ;; Folder configuration - matches your mbsync setup
-  (setq mu4e-drafts-folder "/Drafts")
-  (setq mu4e-sent-folder   "/Sent")  
-  (setq mu4e-trash-folder  "/Trash")
-  (setq mu4e-refile-folder "/INBOX")
-
-  ;; Prefer HTML when available
-  (setq mu4e-view-prefer-html t)
-  ;; Use built-in HTML renderer instead of w3m
-  (setq mu4e-html2text-command 'mu4e-shr2text)
-
-  ;; Enable images
-  (setq mu4e-view-show-images t)
-  (setq mu4e-view-image-max-width 800)
+  ;; Message display
+  (setq notmuch-show-logo nil)
+  (setq notmuch-message-headers '("Subject" "To" "Cc" "Date"))
+  (setq notmuch-message-headers-visible t)
   
-  ;;(setq mu4e-compose-keep-self-cc nil)
-
-  (setq mu4e-compose-format-flowed t)
-  (setq fill-flowed-encode-column 9999)
-  (setq message-fill-column 9999)
-
-  ;; Add this hook inside the mu4e config too
-  (add-hook 'mu4e-compose-mode-hook
-          (lambda ()
-            (auto-fill-mode -1)
-            (setq fill-column 9999)))
-  (setq mu4e-compose-dont-reply-to-self t)
-
-  ;;(setq fill-flowed-encode-column 998)
-  (setq message-kill-buffer-on-exit t)   ; You already have this
-  (setq mu4e-compose-in-new-frame nil)   ; Don't use new frames for compose
-  ;; Configure shr for better rendering
-  (setq shr-color-visible-luminance-min 60)
-  (setq shr-use-colors nil)
-  (setq shr-width 80)
-  ;; Maildir shortcuts
-  (setq mu4e-maildir-shortcuts
-      '(("/INBOX"    . ?i)
-        ("/Sent"     . ?s)
-        ("/Trash"    . ?t)
-        ("/Drafts"   . ?d)))
-
-  (setq mu4e-headers-show-threads t) ; Enable threading
-  (add-to-list 'mu4e-headers-actions
-             '("Capture to Org" . mu4e-action-capture-message) t)
-  (add-to-list 'mu4e-view-actions
-             '("Capture to Org" . mu4e-action-capture-message) t)
-
-  (setq mu4e-headers-fields
-      '((:human-date . 12)
-        (:flags      . 6)
-        (:from       . 22)
-        (:subject    . nil)))
-  ;; SMTP configuration for sending mail
+  ;; Sending mail - keep your SMTP settings
   (setq message-send-mail-function 'smtpmail-send-it
         smtpmail-smtp-server "smtppro.zoho.in"
         smtpmail-smtp-service 587
         smtpmail-stream-type 'starttls
         smtpmail-auth-credentials "~/.authinfo.gpg")
+  
+  ;; HTML email handling
+  (setq mm-text-html-renderer 'shr)
+  (setq shr-color-visible-luminance-min 60)
+  (setq shr-use-colors nil)
+  (setq shr-width 80)
+  
+  ;; Composition settings
+  (setq message-kill-buffer-on-exit t)
+  (setq notmuch-mua-compose-in 'current-window)
 
-  ;; Additional useful settings
-  (setq mu4e-compose-signature-auto-include nil
-        mu4e-view-show-images t
-        mu4e-view-show-addresses t
-        mu4e-attachment-dir "~/Downloads"
-        mu4e-compose-format-flowed t
-        message-kill-buffer-on-exit t)
-  ;;(setq mu4e-compose-format-flowed nil) ; <-- Ensure this is off for HTML email
-  )
- 
-;; put this near the end of your init after evil & mu4e are loaded
-(with-eval-after-load 'mu4e
-  (defun my/mu4e-view-nav-keys ()
-    "Colemak-friendly next/prev message keys in mu4e‑view."
-    (evil-define-key 'normal mu4e-view-mode-map
-      (kbd "C-n") #'mu4e-view-headers-next
-      (kbd "C-e") #'mu4e-view-headers-prev))
-  (add-hook 'mu4e-view-mode-hook #'my/mu4e-view-nav-keys))
+  ;; Archive instead of delete
+  (define-key notmuch-search-mode-map "d" 
+    (lambda () (interactive) (notmuch-search-add-tag '("+deleted" "-inbox"))))
+  (define-key notmuch-show-mode-map "d"
+    (lambda () (interactive) (notmuch-show-add-tag '("+deleted" "-inbox"))))
+  
+  ;; Keep your update interval concept with a hook
+  (run-at-time nil (* 5 60) 'notmuch-poll-and-refresh-this-buffer))
 
-;; Install and require mu4e-thread-folding
-(unless (package-installed-p 'mu4e-thread-folding)
-  (package-vc-install "https://github.com/rougier/mu4e-thread-folding"))
+;; Hook to run mbsync and update notmuch
+(defun notmuch-poll-and-refresh-this-buffer ()
+  "Poll for new mail and refresh the current notmuch buffer"
+  (interactive)
+  (start-process "mbsync" "*mbsync*" "mbsync" "-a")
+  (set-process-sentinel 
+   (get-process "mbsync")
+   (lambda (process event)
+     (when (string= event "finished\n")
+       (notmuch-refresh-this-buffer)))))
 
-(use-package mu4e-thread-folding
-  :after mu4e
+
+(use-package org-msg
+  :ensure t
   :config
-  ;; Enable visual indicators
-  (setq mu4e-thread-folding-show-folding-lines t)
+  ;; Important: Set these BEFORE enabling org-msg-mode
+  (setq org-msg-options "html-postamble:nil H:5 num:nil ^:{} toc:nil author:nil email:nil \\n:t"
+        org-msg-startup "hidestars indent inlineimages"
+        org-msg-greeting-fmt "\nHi %s,\n\n"
+        org-msg-greeting-name-limit 3
+        
+        ;; Critical: Make sure alternatives are set correctly
+        org-msg-default-alternatives '((new . (text html))
+                                       (reply-to-html . (text html))
+                                       (reply-to-text . (text)))
+        
+        ;; Fix conversion settings
+        org-msg-convert-citation t
+        org-msg-separator "^--$\\|^--- $\\|^___$")
+  (setq org-msg-signature "
+#+begin_signature
+--
+Nithin Mani | Founder, Cosdata
+📬 nithin@cosdata.io | 🌐 https://cosdata.io
+#+end_signature
+")
 
-  (custom-set-faces
- ;; Child messages in threads
- '(mu4e-thread-folding-child-face ((t (:extend t :background "#2a2a2a"))))
- 
- ;; Root messages of unfolded threads
- '(mu4e-thread-folding-root-unfolded-face ((t (:extend t :background "#1a3a3a"))))
- 
- ;; Root messages of folded threads
- '(mu4e-thread-folding-root-folded-face ((t (:extend t :background "#3a2a1a"))))
- 
- ;; Single emails - slightly different color to distinguish from threaded
- '(mu4e-thread-folding-single-face ((t (:extend t :background "#2a2a30"))))
- 
- ;; Thread folding lines
- '(mu4e-thread-folding-line-face ((t (:foreground "#555555")))))
+  ;; Enable org-msg mode
+  (org-msg-mode)
 
-    ;; Hook function to set up keybindings after Evil loads
-  (defun my/mu4e-thread-folding-setup ()
-    "Set up thread folding with Evil-compatible keybindings."
-    (mu4e-thread-folding-mode 1)
-    
-    ;; Use Evil's define-key to override the bindings
-    (evil-define-key 'normal mu4e-headers-mode-map
-      (kbd "f") #'mu4e-headers-toggle-at-point
-      (kbd "zf") #'mu4e-headers-fold-at-point        ; Use z prefix like Vim
-      (kbd "zF") #'mu4e-headers-fold-all
-      (kbd "zo") #'mu4e-headers-unfold-at-point
-      (kbd "zO") #'mu4e-headers-unfold-all)
-    
-    ;; Force Evil to recognize the new bindings
-    (evil-normalize-keymaps))
-  (add-hook 'mu4e-headers-mode-hook 'my/mu4e-thread-folding-setup))
+  (defun my/notmuch-org-msg-setup ()
+      (local-set-key (kbd "C-c C-c") #'notmuch-mua-send-and-exit))
 
-(with-eval-after-load 'org
-  (evil-define-key 'normal org-mode-map
-    (kbd "RET") 'org-open-at-point))
+  (add-hook 'message-mode-hook #'my/notmuch-org-msg-setup)
+  
+  ;; Better hook setup
+  (add-hook 'message-mode-hook
+            (lambda ()
+              (when (and (boundp 'notmuch-message-mode)
+                         notmuch-message-mode)
+                (org-msg-edit-mode 1)))))
 
 
+(with-eval-after-load 'ox-latex
+  (add-to-list 'org-latex-classes
+               '("beamer"
+                 "\\documentclass[presentation]{beamer}"
+                 ("\\section{%s}" . "\\section*{%s}")
+                 ("\\subsection{%s}" . "\\subsection*{%s}"))))
+;; Force notmuch address completion in all message-related modes
+(with-eval-after-load 'org-msg
+  (add-hook 'org-msg-edit-mode-hook 'notmuch-address-setup))
 
