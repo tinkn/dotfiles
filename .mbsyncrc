@@ -24,7 +24,7 @@ Near :zoho1-local:
 Create Both
 Sync All
 Expunge Both
-Patterns *
+Patterns "INBOX" "Sent" "Drafts" "Trash" "Spam" "Notification"
 SyncState *
 
 # support@cosdata.io Zoho account

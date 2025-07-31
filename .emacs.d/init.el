@@ -719,17 +719,22 @@
   ;; Keep your update interval concept with a hook
   (run-at-time nil (* 5 60) 'notmuch-poll-and-refresh-this-buffer))
 
-;; Hook to run mbsync and update notmuch
+
 (defun notmuch-poll-and-refresh-this-buffer ()
-  "Poll for new mail and refresh the current notmuch buffer"
+  "Poll for new mail using mbsync, run notmuch new, and refresh the current Notmuch buffer."
   (interactive)
   (start-process "mbsync" "*mbsync*" "mbsync" "-a")
-  (set-process-sentinel 
+  (set-process-sentinel
    (get-process "mbsync")
    (lambda (process event)
      (when (string= event "finished\n")
-       (notmuch-refresh-this-buffer)))))
-
+       ;; Step 1: Update the Notmuch database
+       (start-process "notmuch-new" "*notmuch-new*" "notmuch" "new")
+       (set-process-sentinel
+        (get-process "notmuch-new")
+        (lambda (_proc _event)
+          ;; Step 2: Refresh the Notmuch buffer once notmuch new is done
+          (notmuch-refresh-this-buffer)))))))
 
 (use-package org-msg
   :ensure t
@@ -785,3 +790,6 @@ Nithin Mani | Founder, Cosdata
 (use-package org-modern
   :hook ((org-mode . org-modern-mode)
          (org-agenda-finalize . org-modern-agenda)))
+
+(setq org-latex-toc-command "\\tableofcontents \\clearpage")
+
