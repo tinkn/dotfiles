@@ -329,9 +329,10 @@
          (file+headline "~/org/inbox.org" "Tasks")
          "* TODO %?\n  :PROPERTIES:\n  :CREATED: %U\n  :END:\n ")
 
-        ("e" "Email follow-up" entry
-         (file+headline "~/org/inbox.org" "Email Tasks")
-         "* TODO Follow up with %:fromname on %:subject\n%a\n")))
+       ("e" "Email follow-up" entry
+        (file+headline "~/org/inbox.org" "Email Tasks")
+        "* TODO Follow up with %:fromname on %:subject\n%a\n")))
+      
 
 ;;(defun efs/org-mode-visual-fill ()
 ;;  (setq visual-fill-column-width 100
@@ -525,6 +526,7 @@
 (show-paren-mode 1)
 
 (global-set-key (kbd "C-c a") 'org-agenda)
+(global-set-key (kbd "C-c S") 'org-caldav-sync)
 
 (require 'general)
 
@@ -664,15 +666,10 @@
 
   (setq notmuch-fcc-dirs
       '(("nithin@cosdata.io" . "nithin@cosdata.io/Sent/ -inbox -unread +sent +work")
-        ("nithin@inchiware.com" . "nithin@inchiware.com/Sent/ -inbox -unread +sent +personal")))
+        ("nithin@oodal.in" . "nithin@oodal.in/Sent/ -inbox -unread +sent +personal")))
 
   (setq notmuch-address-command "~/notmuch-address-complete")
   (setq notmuch-address-internal-completion nil)
-
-;; Use notmuch's internal address completion
-;; (setq notmuch-address-command 'internal)
-;; Enable address completion from sent and received emails
-;; (setq notmuch-address-internal-completion '(sent received))
 
   (require 'notmuch-address)
   (notmuch-address-setup)
@@ -686,97 +683,113 @@
           (:name "unread" :query "tag:unread" :key "u" :search-type tree)
           (:name "sent" :query "tag:sent" :key "s" :search-type tree)
           (:name "drafts" :query "tag:draft" :key "d" :search-type tree)
+          (:name "cosdata inbox" :query "tag:inbox and (to:nithin@cosdata.io or from:nithin@cosdata.io)" :key "c" :search-type tree)
+          (:name "oodal inbox" :query "tag:inbox and (to:nithin@oodal.in or from:nithin@oodal.in)" :key "o" :search-type tree)
           (:name "all mail" :query "*" :key "a" :search-type tree)))
-  
   ;; Message display
   (setq notmuch-show-logo t)
   (setq notmuch-message-headers '("Subject" "To" "Cc" "Date"))
   (setq notmuch-message-headers-visible t)
   
-  ;; Sending mail - keep your SMTP settings
-  (setq message-send-mail-function 'smtpmail-send-it
-        smtpmail-smtp-server "smtppro.zoho.in"
-        smtpmail-smtp-service 587
-        smtpmail-stream-type 'starttls
-        smtpmail-auth-credentials "~/.authinfo.gpg")
+  (setq send-mail-function 'sendmail-send-it
+      message-send-mail-function 'sendmail-send-it
+      sendmail-program "msmtp"
+      mail-specify-envelope-from t
+      mail-envelope-from 'header
+      message-sendmail-envelope-from 'header)
   
   ;; HTML email handling
   (setq mm-text-html-renderer 'shr)
   (setq shr-color-visible-luminance-min 60)
   (setq shr-use-colors nil)
   (setq shr-width 120)
-  
+
+  (setq message-sendmail-envelope-from 'header)
+  (setq notmuch-always-prompt-for-sender t)
+  ;; Set up multiple identities - notmuch will auto-select for replies
+  (setq notmuch-identities '("Nithin Mani <nithin@cosdata.io>"
+                          "Nithin Mani <nithin@oodal.in>"))
+
+  ;; For replies, notmuch will automatically choose the identity that matches
+  ;; the To/Cc field of the original message
+  (setq notmuch-mua-user-agent-function 'notmuch-mua-user-agent-full)
   ;; Composition settings
   (setq message-kill-buffer-on-exit t)
   (setq notmuch-mua-compose-in 'current-window)
 
+  (define-key notmuch-tree-mode-map (kbd "p") 'notmuch-tree-resume-message)
+  (define-key notmuch-tree-mode-map (kbd "e") 'notmuch-tree-prev-matching-message)
   ;; Archive instead of delete
   (define-key notmuch-search-mode-map "d" 
     (lambda () (interactive) (notmuch-search-add-tag '("+deleted" "-inbox" "-sent"))))
   (define-key notmuch-show-mode-map "d"
     (lambda () (interactive) (notmuch-show-add-tag '("+deleted" "-inbox" "-sent"))))
   
+  ;; Mail polling
+  (defun notmuch-poll-and-refresh-this-buffer ()
+    "Poll for new mail using mbsync and refresh."
+    (interactive)
+    (start-process "mbsync" "*mbsync*" "mbsync" "-a")
+    (set-process-sentinel
+     (get-process "mbsync")
+     (lambda (process event)
+       (when (string= event "finished\n")
+         (start-process "notmuch-new" "*notmuch-new*" "notmuch" "new")
+         (set-process-sentinel
+          (get-process "notmuch-new")
+          (lambda (_proc _event)
+            (notmuch-refresh-this-buffer)))))))
   ;; Keep your update interval concept with a hook
   (run-at-time nil (* 5 60) 'notmuch-poll-and-refresh-this-buffer))
 
-
-(defun notmuch-poll-and-refresh-this-buffer ()
-  "Poll for new mail using mbsync, run notmuch new, and refresh the current Notmuch buffer."
-  (interactive)
-  (start-process "mbsync" "*mbsync*" "mbsync" "-a")
-  (set-process-sentinel
-   (get-process "mbsync")
-   (lambda (process event)
-     (when (string= event "finished\n")
-       ;; Step 1: Update the Notmuch database
-       (start-process "notmuch-new" "*notmuch-new*" "notmuch" "new")
-       (set-process-sentinel
-        (get-process "notmuch-new")
-        (lambda (_proc _event)
-          ;; Step 2: Refresh the Notmuch buffer once notmuch new is done
-          (notmuch-refresh-this-buffer)))))))
-
+ 
 (use-package org-msg
   :ensure t
   :config
-  ;; Important: Set these BEFORE enabling org-msg-mode
+  ;; Org-msg basic setup
   (setq org-msg-options "html-postamble:nil H:5 num:nil ^:{} toc:nil author:nil email:nil \\n:t"
         org-msg-startup "hidestars indent inlineimages"
         org-msg-greeting-fmt "\nHi %s,\n\n"
         org-msg-greeting-name-limit 3
-        
-        ;; Critical: Make sure alternatives are set correctly
         org-msg-default-alternatives '((new . (text html))
                                        (reply-to-html . (text html))
                                        (reply-to-text . (text)))
-        
-        ;; Fix conversion settings
         org-msg-convert-citation t
-        org-msg-separator "^--$\\|^--- $\\|^___$")
-  (setq org-msg-signature "
+        org-msg-separator "^--$\\|^--- $\\|^___$"
+        ;; Start with empty signature, will be updated dynamically
+        org-msg-signature "")
+
+  ;; Enable org-msg mode
+  (org-msg-mode)
+
+  ;; Function to dynamically update signature based on From
+  (defun my/org-msg-set-signature ()
+    "Update org-msg signature based on the current From header."
+    (let ((from (or (message-fetch-field "from") "")))
+      (setq org-msg-signature
+            (cond
+             ((string-match "nithin@cosdata.io" from)
+              "
 #+begin_signature
 --
 Nithin Mani | Founder, Cosdata
 📬 nithin@cosdata.io | 🌐 https://cosdata.io
 #+end_signature
 ")
+             ((string-match "nithin@oodal.in" from)
+              "
+#+begin_signature
+--
+Nithin Mani
+📬 nithin@oodal.in
+#+end_signature
+")
+             (t "")))
+      (when (fboundp 'org-msg-update-signature)
+        (org-msg-update-signature))))
 
-  ;; Enable org-msg mode
-  (org-msg-mode)
-
-  (defun my/notmuch-org-msg-setup ()
-      (local-set-key (kbd "C-c C-c") #'notmuch-mua-send-and-exit))
-
-  (add-hook 'message-mode-hook #'my/notmuch-org-msg-setup)
-  
-  ;; Better hook setup
-  (add-hook 'message-mode-hook
-            (lambda ()
-              (when (and (boundp 'notmuch-message-mode)
-                         notmuch-message-mode)
-                (org-msg-edit-mode 1)))))
-
-
+  ;; Hook to set signature when composing a message
+  (add-hook 'message-setup-hook #'my/org-msg-set-signature))
 (with-eval-after-load 'ox-latex
   (add-to-list 'org-latex-classes
                '("beamer"
@@ -793,3 +806,34 @@ Nithin Mani | Founder, Cosdata
 
 (setq org-latex-toc-command "\\tableofcontents \\clearpage")
 
+
+(use-package org-caldav
+  :ensure t
+  :after org
+  :config
+  ;; 1. CalDAV Settings
+  (setq org-caldav-url "https://calendar.zoho.in/caldav"
+        org-caldav-calendar-id "zz0802123050d1399af9e26ef6ca91d05331a07de8958c1980c1f4696165b31b05bec0e5340f1ffa384cf75c418b110e3e68db480b/events"
+        org-caldav-use-file-authinfo t
+        org-caldav-inbox "~/org/appointments.org"
+        org-caldav-files '("~/org/work.org" "~/org/inbox.org")
+        org-caldav-username "nithin@cosdata.io"
+        org-caldav-debug-level 2)
+  
+  ;; Optional: schedule periodic sync every 10 minutes
+  ;; (run-at-time "5 min" 300 'org-caldav-sync)
+)
+
+
+(use-package ol-notmuch
+  :ensure t
+  :after notmuch
+  :config
+
+  ;; Customize capture contexts for Org-capture with email links.
+  (setq org-capture-templates-contexts
+        '(("e" ((in-mode . "notmuch-search-mode")
+                (in-mode . "notmuch-show-mode")
+                (in-mode . "notmuch-tree-mode")))))
+
+)
