@@ -497,7 +497,21 @@
      "6c531d6c3dbc344045af7829a3a20a09929e6c41d7a7278963f7d3215139f6a7"
      "c4063322b5011829f7fdd7509979b5823e8eea2abf1fe5572ec4b7af1dd78519"
      default))
- '(package-selected-packages nil)
+ '(package-selected-packages
+   '(all-the-icons-dired auto-package-update command-log-mode company
+			 counsel-projectile dired-hide-dotfiles
+			 dired-open dired-preview dired-single dirvish
+			 doom-modeline doom-themes eshell-git-prompt
+			 eterm-256color evil-colemak-basics
+			 evil-collection evil-leader flycheck forge
+			 general git-commit helpful ivy-prescient
+			 ivy-rich json-mode key-chord lsp-treemacs
+			 meow mu4e-thread-folding no-littering
+			 notmuch-addr ob-d2 ob-rust ol-notmuch
+			 org-bullets org-caldav org-mime org-modern
+			 org-msg org-roam pyvenv rainbow-delimiters
+			 rustic treemacs-evil treemacs-projectile
+			 vterm which-key))
  '(package-vc-selected-packages
    '((mu4e-thread-folding :vc-backend Git :url
 			  "https://github.com/rougier/mu4e-thread-folding"))))
@@ -837,3 +851,91 @@ Nithin Mani
                 (in-mode . "notmuch-tree-mode")))))
 
 )
+
+
+(defun my/meow-colemak-setup ()
+  ;; Leader key (Space)
+  (meow-leader-define-key
+   '("SPC" . execute-extended-command)
+   '("f"   . find-file)
+   '("b"   . switch-to-buffer)
+   '("k"   . kill-buffer)
+   '("w"   . save-buffer))
+
+  ;; Normal mode Colemak bindings
+  (meow-normal-define-key
+   '("0" . meow-expand-0)
+   '("1" . meow-expand-1)
+   '("2" . meow-expand-2)
+   '("3" . meow-expand-3)
+   '("4" . meow-expand-4)
+   '("5" . meow-expand-5)
+   '("6" . meow-expand-6)
+   '("7" . meow-expand-7)
+   '("8" . meow-expand-8)
+   '("9" . meow-expand-9)
+   '("-" . negative-argument)
+   '(";" . meow-reverse)
+   '("," . meow-inner-of-thing)
+   '("." . meow-bounds-of-thing)
+   '("[" . meow-beginning-of-thing)
+   '("]" . meow-end-of-thing)
+   '("/" . meow-visit)
+   '("a" . meow-append)
+   '("A" . meow-open-below)
+   '("b" . meow-back-word)
+   '("B" . meow-back-symbol)
+   '("c" . meow-change)
+   '("d" . meow-indent)
+   '("e" . meow-prev)
+   '("E" . meow-prev-expand)
+   '("f" . meow-find)
+   '("g" . meow-cancel-selection)
+   '("G" . meow-grab)
+   '("m" . meow-left)
+   '("M" . meow-left-expand)
+   '("i" . meow-right)
+   '("I" . meow-right-expand)
+   '("j" . meow-join)
+   '("k" . meow-kill)
+   '("l" . meow-line)
+   '("L" . meow-goto-line)
+   '("h" . meow-mark-word)
+   '("H" . meow-mark-symbol)
+   '("n" . meow-next)
+   '("N" . meow-next-expand)
+   '("o" . meow-block)
+   '("O" . meow-to-block)
+   '("p" . meow-yank)
+   '("q" . meow-quit)
+   '("r" . meow-replace)
+   '("s" . meow-insert)
+   '("S" . meow-open-above)
+   '("t" . meow-till)
+   '("u" . meow-undo)
+   '("U" . meow-undo-in-selection)
+   '("v" . meow-search)
+   '("w" . meow-next-word)
+   '("W" . meow-next-symbol)
+   '("x" . meow-delete)
+   '("X" . meow-backward-delete)
+   '("y" . meow-save)
+   '("z" . meow-pop-selection)
+   '("'" . repeat)
+   '("<escape>" . ignore)
+  ;; '("<backspace>" . ignore)
+  ;; '("<return>" . ignore)
+   )
+  )
+
+
+(use-package meow
+  :ensure t
+  :config
+  (my/meow-colemak-setup)
+  (add-hook 'notmuch-hello-mode-hook (lambda () (meow-mode -1)))
+  (add-hook 'notmuch-search-mode-hook (lambda () (meow-mode -1)))
+  (add-hook 'notmuch-show-mode-hook (lambda () (meow-mode -1)))
+  (add-hook 'notmuch-tree-mode-hook (lambda () (meow-mode -1)))
+  (meow-global-mode 1))
+
