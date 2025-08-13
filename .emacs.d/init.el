@@ -1,9 +1,4 @@
-;; NOTE: init.el is now generated from Emacs.org.  Please edit that file
-;;       in Emacs and init.el will be generated automatically!
 
-;; You will most likely need to adjust this font size for your system!
-(defvar efs/default-font-size 120)
-(defvar efs/default-variable-font-size 150)
 
 ;; Make frame transparency overridable
 ;;(defvar efs/frame-transparency '(90 . 90))
@@ -26,13 +21,6 @@
 (require 'use-package)
 (setq use-package-always-ensure t)
 
-(use-package auto-package-update
-  :custom
-  (auto-package-update-interval 7)
-  (auto-package-update-prompt-before-update t)
-  (auto-package-update-hide-results t)
-  :config
-  (auto-package-update-maybe))
 
 (defun my-minibuffer-setup-hook () (setq gc-cons-threshold (* 640 1024 1024)))
 
@@ -92,15 +80,30 @@
                 eshell-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
-(set-face-attribute 'default nil :font "Fira Code Retina" :height efs/default-font-size)
 
-;; Set the fixed pitch face
-(set-face-attribute 'fixed-pitch nil :font "Inconsolata" :height efs/default-font-size)
+;; Define your preferred sizes
+(defvar my/default-font-size 120)
+(defvar my/variable-font-size 140)
 
-;; Set the variable pitch face
-(set-face-attribute 'variable-pitch nil :family "Roboto" :height efs/default-variable-font-size :weight 'regular)
+;; Main font for code and general UI
+(set-face-attribute 'default nil
+                    :font "FiraCode Nerd Font Mono"
+                    :height my/default-font-size)
 
+;; Fixed-pitch font (for code blocks inside org-mode, tables, etc.)
+(set-face-attribute 'fixed-pitch nil
+                    :font "FiraCode Nerd Font Mono"
+                    :height my/default-font-size)
+
+;; Variable-pitch font (for prose in org-mode)
+(set-face-attribute 'variable-pitch nil
+                    :font "Fira Sans"
+                    :height my/variable-font-size
+                    :weight 'regular)
+
+;; Enable variable-pitch for Org mode
 (add-hook 'org-mode-hook 'variable-pitch-mode)
+
 
 ;; Make ESC quit prompts
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
@@ -123,92 +126,98 @@
   :config
   (setq which-key-idle-delay 1))
 
-(use-package ivy
-  :diminish
-  :bind (("C-s" . swiper)
-         :map ivy-minibuffer-map
-         ("TAB" . ivy-alt-done)
-         ("C-l" . ivy-alt-done)
-         ("C-j" . ivy-next-line)
-         ("C-k" . ivy-previous-line)
-         :map ivy-switch-buffer-map
-         ("C-k" . ivy-previous-line)
-         ("C-l" . ivy-done)
-         ("C-d" . ivy-switch-buffer-kill)
-         :map ivy-reverse-i-search-map
-         ("C-k" . ivy-previous-line)
-         ("C-d" . ivy-reverse-i-search-kill))
-  :config
-  (ivy-mode 1))
+;; 1. Vertico: completion UI in minibuffer
+(use-package vertico
+  :ensure t
+  :init
+  (vertico-mode))
 
-;;(use-package ivy-rich
-;;  :init
-;;  (ivy-rich-mode 1))
-
-(use-package counsel
-  :bind (("C-M-j" . 'counsel-switch-buffer)
-         :map minibuffer-local-map
-         ("C-r" . 'counsel-minibuffer-history))
+;; 2. Orderless: fuzzy, space-separated matching
+(use-package orderless
+  :ensure t
   :custom
-  (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
-  :config
-  (counsel-mode 1))
+  (completion-styles '(orderless))
+  (completion-category-defaults nil)
+  (completion-category-overrides '((file (styles partial-completion)))))
 
-(use-package ivy-prescient
-  :after counsel
-  :custom
-  (ivy-prescient-enable-filtering nil)
-  :config
-  ;; Uncomment the following line to have sorting remembered across sessions!
-  ;(prescient-persist-mode 1)
-  (ivy-prescient-mode 1))
+;; 3. Marginalia: annotations (like docs, file info) in minibuffer
+(use-package marginalia
+  :ensure t
+  :init
+  (marginalia-mode))
 
-(use-package helpful
-  :custom
-  (counsel-describe-function-function #'helpful-callable)
-  (counsel-describe-variable-function #'helpful-variable)
-  :bind
-  ([remap describe-function] . counsel-describe-function)
-  ([remap describe-command] . helpful-command)
-  ([remap describe-variable] . counsel-describe-variable)
-  ([remap describe-key] . helpful-key))
+(require 'project)
 
-(use-package hydra)
+;; ---------------------------
+;; Project + Consult Integration
+;; ---------------------------
+(require 'project)
 
-(defhydra hydra-text-scale (:timeout 4)
-  "scale text"
-  ("j" text-scale-increase "in")
-  ("k" text-scale-decrease "out")
-  ("f" nil "finished" :exit t))
+(use-package consult
+  :ensure t)
 
+(use-package consult-project-extra
+  :ensure t)
+;; Optional keybinding similar to Projectile
+(global-set-key (kbd "C-c p f") 'consult-project-extra-find)
+(global-set-key (kbd "C-c p o") 'consult-project-extra-find-other-window)
+
+
+(defun my/pick-font (candidates)
+  "Return the first available font from CANDIDATES list, or nil if none found."
+  (seq-find (lambda (f) (member f (font-family-list))) candidates))
 
 (defun efs/org-font-setup ()
-  ;; Replace list hyphen with dot
-  (font-lock-add-keywords 'org-mode
-                          '(("^ *\\([-]\\) "
-                             (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+  "Configure fonts and bullets for Org mode."
 
-  ;; Set faces for heading levels
-  (dolist (face '((org-level-1 . 1.5)
-                  (org-level-2 . 1.25)
-                  (org-level-3 . 1.12)
-                  (org-level-4 . 1.06)
-                  (org-level-5 . 1.0)
-                  (org-level-6 . 1.0)))
-    (set-face-attribute (car face) nil :font "FiraSans-Regular" :weight 'regular :height (cdr face)))
+  ;; Pick fonts safely
+  (let* ((default-font     (my/pick-font '("FiraCode Nerd Font Mono" "Fira Mono" "Monospace")))
+         (heading-font     (my/pick-font '("Fira Sans" "Sans Serif")))
+         (variable-font    (my/pick-font '("Fira Sans" "Sans Serif")))
+         (fixed-font       (my/pick-font '("FiraCode Nerd Font Mono" "Fira Mono" "Monospace"))))
 
-  ;; Ensure that anything that should be fixed-pitch in Org files appears that way
-  (set-face-attribute 'org-block nil    :foreground nil :inherit 'fixed-pitch)
-  (set-face-attribute 'org-table nil    :inherit 'fixed-pitch)
-  (set-face-attribute 'org-formula nil  :inherit 'fixed-pitch)
-  (set-face-attribute 'org-code nil     :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'org-table nil    :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
-  (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
-  (set-face-attribute 'org-checkbox nil  :inherit 'fixed-pitch)
-  (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
-  (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
+    ;; Replace list hyphen with bullet •
+    (font-lock-add-keywords 'org-mode
+                            '(("^ *\\([-+*]\\) "
+                               (0 (prog1 ()
+                                    (compose-region (match-beginning 1)
+                                                    (match-end 1) "•"))))))
+
+    ;; Set heading fonts (variable pitch)
+    (when heading-font
+      (dolist (face-height '((org-level-1 . 1.5)
+                             (org-level-2 . 1.25)
+                             (org-level-3 . 1.12)
+                             (org-level-4 . 1.06)
+                             (org-level-5 . 1.0)
+                             (org-level-6 . 1.0)))
+        (set-face-attribute (car face-height) nil
+                            :font heading-font
+                            :weight 'regular
+                            :height (cdr face-height))))
+
+    ;; Fixed-pitch faces (for code, tables, etc.)
+    (when fixed-font
+      (dolist (face '(org-block org-table org-formula
+                      org-code org-verbatim org-special-keyword
+                      org-meta-line org-checkbox
+                      line-number line-number-current-line))
+        (set-face-attribute face nil
+                            :inherit 'fixed-pitch
+                            :font fixed-font
+                            :foreground 'unspecified)))
+
+    ;; Variable-pitch for prose
+    (when variable-font
+      (set-face-attribute 'variable-pitch nil
+                          :font variable-font
+                          :weight 'regular
+                          :height 1.1))))
+
+;; Run after Org is loaded
+(with-eval-after-load 'org
+  (efs/org-font-setup))
+
 
 (defun efs/org-mode-setup ()
   (org-indent-mode)
@@ -292,12 +301,11 @@
           (?C . (:foreground "gray"))))
   
   ;; Display priorities as flags in agenda
-  (setq org-agenda-fontify-priorities t) 
-  (efs/org-font-setup))
+  (setq org-agenda-fontify-priorities t) )
 
 (setq org-default-notes-file "~/org/inbox.org")
 
-(global-set-key (kbd "C-c c") 'org-capture)
+(global-set-key (kbd "C-c t") 'org-capture)
 (global-set-key (kbd "C-c v") 'dirvish)
 (global-set-key (kbd "C-c e") 'notmuch)
 
@@ -347,9 +355,11 @@
 (org-babel-do-load-languages
   'org-babel-load-languages
     '((python . t)
-     (d2 . t)))
+     ))
 
-(require 'ob-rust)
+(use-package ob-rust
+  :ensure t
+  :after org)
 
 ;; Add cargo as a rust execution path for org babel
 ;; (setq org-babel-rust-command "cargo script")
@@ -385,27 +395,10 @@
 (use-package flycheck :ensure)
 
 
-(use-package treemacs-projectile)
-
-
-
 (use-package pyvenv
   :config
   (pyvenv-mode 1))
 
-(use-package projectile
-  :diminish projectile-mode
-  :config (projectile-mode)
-  :custom ((projectile-completion-system 'ivy))
-  ;;:bind-keymap
-  ;;("C-c p" . projectile-command-map)
-  :init
-  ;; Add your specific project directories
-  (setq projectile-project-search-path '("~/org" "~/Orgzly" "~/cosdata"))
-  (setq projectile-switch-project-action #'projectile-dired))
-
-(use-package counsel-projectile
-  :config (counsel-projectile-mode))
 
 ;; NOTE: Make sure to configure a GitHub token before using this package!
 ;; - https://magit.vc/manual/forge/Token-Creation.html#Token-Creation
@@ -469,8 +462,6 @@
   :custom ((dired-listing-switches "-agho --group-directories-first"))
     )
 
-(use-package dired-single)
-
 (use-package all-the-icons-dired
   :hook (dired-mode . all-the-icons-dired-mode))
 
@@ -485,47 +476,7 @@
   :hook (dired-mode . dired-hide-dotfiles-mode)
   )
 
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(custom-safe-themes
-   '("56044c5a9cc45b6ec45c0eb28df100d3f0a576f18eef33ff8ff5d32bac2d9700"
-     "88f7ee5594021c60a4a6a1c275614103de8c1435d6d08cc58882f920e0cec65e"
-     "5f19cb23200e0ac301d42b880641128833067d341d22344806cdad48e6ec62f6"
-     "6c531d6c3dbc344045af7829a3a20a09929e6c41d7a7278963f7d3215139f6a7"
-     "c4063322b5011829f7fdd7509979b5823e8eea2abf1fe5572ec4b7af1dd78519"
-     default))
- '(package-selected-packages
-   '(all-the-icons-dired auto-package-update command-log-mode company
-			 counsel-projectile dired-hide-dotfiles
-			 dired-open dired-preview dired-single dirvish
-			 doom-modeline doom-themes eshell-git-prompt
-			 eterm-256color evil-colemak-basics
-			 evil-collection evil-leader flycheck forge
-			 general git-commit helpful ivy-prescient
-			 ivy-rich json-mode key-chord lsp-treemacs
-			 meow mu4e-thread-folding no-littering
-			 notmuch-addr ob-d2 ob-rust ol-notmuch
-			 org-bullets org-caldav org-mime org-modern
-			 org-msg org-roam pyvenv rainbow-delimiters
-			 rustic treemacs-evil treemacs-projectile
-			 vterm which-key))
- '(package-vc-selected-packages
-   '((mu4e-thread-folding :vc-backend Git :url
-			  "https://github.com/rougier/mu4e-thread-folding"))))
 
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(mu4e-thread-folding-child-face ((t (:extend t :background "#2a2a2a"))))
- '(mu4e-thread-folding-line-face ((t (:foreground "#555555"))))
- '(mu4e-thread-folding-root-folded-face ((t (:extend t :background "#3a2a1a"))))
- '(mu4e-thread-folding-root-unfolded-face ((t (:extend t :background "#1a3a3a"))))
- '(mu4e-thread-folding-single-face ((t (:extend t :background "#2a2a30")))))
 
 (defun switch-to-last-buffer ()
   (interactive)
@@ -540,10 +491,8 @@
 (show-paren-mode 1)
 
 (global-set-key (kbd "C-c a") 'org-agenda)
-(global-set-key (kbd "C-c S") 'org-caldav-sync)
-(global-set-key (kbd "C-c p") 'counsel-projectile)
-
-(require 'general)
+;; (global-set-key (kbd "C-c S") 'org-caldav-sync)
+(global-set-key (kbd "C-c m") 'magit-status)
 
 (use-package htmlize)
 (require 'htmlize)
@@ -594,9 +543,9 @@
   :custom
   (org-roam-directory "~/org")
   (org-roam-completion-everywhere t)
-  :bind (("C-c n l" . org-roam-buffer-toggle)
-         ("C-c n f" . org-roam-node-find)
-         ("C-c n i" . org-roam-node-insert)
+  :bind (("C-c r l" . org-roam-buffer-toggle)
+         ("C-c r f" . org-roam-node-find)
+         ("C-c r i" . org-roam-node-insert)
          :map org-mode-map
          ("C-M-i"    . completion-at-point))
   :config
@@ -640,8 +589,6 @@
 
 ;;(setq dired-dwim-target t)
 
-(dirvish-override-dired-mode)
-
 ;; Enable Flyspell for Org mode
 (add-hook 'org-mode-hook 'flyspell-mode)
 
@@ -671,6 +618,7 @@
   :ensure t
   :init
   (setq notmuch-search-oldest-first nil)
+  (setq notmuch-tree-oldest-first nil)
   :config
   ;; Basic notmuch settings
   (setq notmuch-show-all-tags-list t)
@@ -692,7 +640,8 @@
 
   (define-key notmuch-tree-mode-map (kbd "SPC") 'scroll-up-command)
   (define-key notmuch-tree-mode-map (kbd "DEL") 'scroll-down-command)
-  ;; Search configuration
+ 
+   ;; Search configuration
   (setq notmuch-saved-searches
         '((:name "inbox" :query "tag:inbox" :key "i" :search-type tree)
           (:name "unread" :query "tag:unread" :key "u" :search-type tree)
@@ -856,12 +805,12 @@ Nithin Mani
 
 (defun my/meow-colemak-setup ()
   ;; Leader key (Space)
-  (meow-leader-define-key
-   '("SPC" . execute-extended-command)
-   '("f"   . find-file)
-   '("b"   . switch-to-buffer)
-   '("k"   . kill-buffer)
-   '("w"   . save-buffer))
+(meow-leader-define-key
+ '("SPC" . execute-extended-command)
+ '("f"   . find-file)
+ '("b"   . switch-to-buffer)
+ '("k"   . kill-buffer)
+ '("w"   . save-buffer))
 
   ;; Normal mode Colemak bindings
   (meow-normal-define-key
@@ -943,3 +892,15 @@ Nithin Mani
   (add-hook 'minibuffer-setup-hook (lambda () (meow-mode -1)))
   (meow-global-mode 1))
 
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages nil))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
