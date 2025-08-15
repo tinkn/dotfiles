@@ -162,6 +162,9 @@
 (global-set-key (kbd "C-c p f") 'consult-project-extra-find)
 (global-set-key (kbd "C-c p o") 'consult-project-extra-find-other-window)
 
+(global-set-key (kbd "C-c w w") 'other-window)
+(global-set-key (kbd "C-c w d") 'delete-window)
+(global-set-key (kbd "C-c w o") 'delete-other-windows)
 
 (defun my/pick-font (candidates)
   "Return the first available font from CANDIDATES list, or nil if none found."
@@ -810,7 +813,7 @@ Nithin Mani
  '("f"   . find-file)
  '("b"   . switch-to-buffer)
  '("k"   . kill-buffer)
- '("w"   . save-buffer))
+ '("s"   . save-buffer))
 
   ;; Normal mode Colemak bindings
   (meow-normal-define-key
